@@ -16,6 +16,8 @@ function M.register()
     end,
     --- Diagnostika: počet přestaveb sítí od začátku hry.
     stats = function() return { rebuilds = storage.rebuilds or 0 } end,
+    --- Nastaví interval vyrovnávání (nastavení mapy smí měnit jen tento mod) – pro testy a jiné mody.
+    set_interval = function(ticks) settings.global["fb-balance-interval"] = { value = ticks } end,
     --- Vynutí přestavbu sítí v příštím ticku.
     rebuild = function() storage.dirty = true end,
     --- Úklid evidence a obnova skrytých kombinátorů (jako po změně modů).

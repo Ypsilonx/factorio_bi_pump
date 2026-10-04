@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # Výkonový test: dlouhý bus se spojkami fluid-bus proti stejnému busu s vanilla pumpami.
-# Použití: tools/run-perf.sh [počet_úseků=1000] [ticků=1800]   (cestu k Factoriu lze změnit proměnnou FACTORIO_EXE)
+# Použití: tools/run-perf.sh [počet_úseků=1000] [ticků=1800] [interval_vyrovnávání=5] [úseků_na_síť=0 (= jedna síť)]   (cestu k Factoriu lze změnit proměnnou FACTORIO_EXE)
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 FACTORIO="${FACTORIO_EXE:-C:/STEAM/steamapps/common/Factorio/bin/x64/factorio.exe}"
 COUNT="${1:-1000}"
 TICKS="${2:-1800}"
+INTERVAL="${3:-5}"
+GROUP="${4:-0}"
 
 # Postaví mapu varianty (couplers / pumps), odsimuluje TICKS ticků a vypíše průměrný čas ticku.
 run() {
@@ -16,7 +18,7 @@ run() {
   rm -rf "$RUN"
   mkdir -p "$RUN/mods" "$RUN/write-data"
   cp -r "$ROOT/tests/perf/fb-perf" "$RUN/mods/fb-perf"
-  echo "return $COUNT" > "$RUN/mods/fb-perf/count.lua"
+  echo "return { $COUNT, $INTERVAL, $GROUP }" > "$RUN/mods/fb-perf/count.lua"
   if [ "$with_mod" = true ]; then cp -r "$ROOT/fluid-bus" "$RUN/mods/fluid-bus"; fi
   cat > "$RUN/mods/mod-list.json" <<JSON
 {"mods":[{"name":"base","enabled":true},{"name":"elevated-rails","enabled":false},{"name":"quality","enabled":false},
@@ -39,6 +41,9 @@ JSON
     | sed -E 's/.*max: ([0-9.]+) ms.*/\1/')"
   echo "$line" | sed -E 's/.*Performed ([0-9]+) updates in ([0-9.]+) ms.*/\1 \2/' \
     | awk -v v="$variant" -v m="$max" '{ printf "FB-PERF %s %.3f ms/tick, max %s ms\n", v, $2 / $1, m }'
+  # Čas samotného skriptu (sloupec scriptUpdate v ns) po ustálení – od ticku 600.
+  awk -F, -v v="$variant" '/^t[0-9]+,/ { t = substr($1, 2) + 0; if (t >= 600) { s = $43 / 1e6; sum += s; n++; if (s > mx) mx = s } }
+    END { if (n) printf "FB-PERF %s skript po ustálení: průměr %.3f ms, max %.3f ms\n", v, sum / n, mx }' "$RUN/bench.log"
 }
 
 run couplers true

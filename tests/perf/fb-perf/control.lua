@@ -1,10 +1,13 @@
 -- Výkonový scénář: dlouhý bus (N úseků po 29 trubkách) se spojkami (s modem fluid-bus) nebo s pumpami
 -- (bez něj), napájení velkými sloupy, zdroj vody na začátku a odběr na konci (infinity pipe).
--- Počet úseků zapisuje tools/run-perf.sh do souboru count.lua vedle tohoto skriptu
+-- Počet úseků a interval vyrovnávání zapisuje tools/run-perf.sh do souboru count.lua vedle tohoto skriptu
 -- (require jde jen při načítání souboru, ne v on_init).
-local COUNT = require("count")
+local COUNT, INTERVAL, GROUP = table.unpack(require("count"))
 
 script.on_init(function()
+  if INTERVAL and script.active_mods["fluid-bus"] then
+    remote.call("fb", "set_interval", INTERVAL)
+  end
   local surface = game.surfaces[1]
   surface.always_day = true
   local bus = script.active_mods["fluid-bus"] ~= nil
@@ -28,13 +31,15 @@ script.on_init(function()
   eei.electric_buffer_size = 1e12
   eei.power_production = 1e9
   pole(1)
-  for _ = 1, COUNT do
+  for index = 1, COUNT do
+    -- Každých GROUP úseků vanilla pumpa místo spojky: bus se rozdělí na samostatné sítě.
+    local split = GROUP and GROUP > 0 and index % GROUP == 0
     for _ = 1, bus and 29 or 28 do
       x = x + 1
       surface.create_entity({ name = pipe, position = { x + 0.5, 0.5 }, force = "player" })
     end
     x = x + 1
-    if bus then
+    if bus and not split then
       local coupler = surface.create_entity({ name = "fb-bus-coupler", position = { x + 0.5, 0.5 }, force = "player",
         direction = defines.direction.east, raise_built = true })
       storage.first = storage.first or coupler.unit_number
