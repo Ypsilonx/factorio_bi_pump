@@ -4,11 +4,25 @@
 --- Přestavba je levná (jen Lua, žádné čtení hry): strany spojek udržuje rozložená kontrola v control.lua.
 local network = require("scripts.network")
 
-local COUPLER = prototypes.mod_data["fb-data"].data.coupler
+local DATA = prototypes.mod_data["fb-data"].data
+local COUPLER = DATA.coupler
+local INTERVAL = { type = "virtual", name = DATA.interval_signal }
+local RED = defines.wire_connector_id.circuit_red
+local GREEN = defines.wire_connector_id.circuit_green
+--- Rozsah intervalu ze signálu (stejný jako nastavení mapy fb-balance-interval).
+local MIN_INTERVAL, MAX_INTERVAL = 1, 600
 
 local M = {}
 
---- Přečte obě strany spojky (segment a sousední BUS trubku) a napájení.
+--- Je spojka zapnutá? Vypnout ji jde podmínkou obvodové sítě (jako pumpu).
+--- @param entity LuaEntity spojka
+--- @return boolean
+local function enabled(entity)
+  local behavior = entity.get_control_behavior()
+  return not (behavior and behavior.disabled)
+end
+
+--- Přečte obě strany spojky (segment a sousední BUS trubku), napájení a zapnutí.
 --- Zástupcem nesmí být jiná spojka: její fluidbox do potrubí neproudí a kapacitu segmentu nevrací.
 --- @param coupler table záznam ze storage.couplers
 --- @return boolean true, pokud se něco změnilo
@@ -28,7 +42,34 @@ function M.refresh(coupler)
   local powered = entity.energy > 0
   if coupler.powered ~= powered then changed = true end
   coupler.powered = powered
+  local on = enabled(entity)
+  if coupler.enabled ~= on then changed = true end
+  coupler.enabled = on
   return changed
+end
+
+--- Interval sítě: nejmenší interval ze signálu na jejích spojkách, nil = platí nastavení mapy.
+--- @param net table síť ze storage.networks
+--- @return integer|nil
+local function network_interval(net)
+  local best
+  for _, unit in ipairs(net.couplers) do
+    local value = storage.couplers[unit].interval
+    if value and (not best or value < best) then best = value end
+  end
+  return best
+end
+
+--- Přečte signál intervalu na spojce (oba dráty); při změně přepočte interval její sítě.
+--- @param unit integer
+--- @param coupler table záznam ze storage.couplers
+function M.read_interval(unit, coupler)
+  local value = coupler.entity.get_signal(INTERVAL, RED, GREEN)
+  value = value > 0 and math.min(math.max(value, MIN_INTERVAL), MAX_INTERVAL) or nil
+  if coupler.interval == value then return end
+  coupler.interval = value
+  local net = M.network_of(unit)
+  if net then net.interval = network_interval(net) end
 end
 
 --- Přečte segment přes zástupnou trubku.
@@ -50,7 +91,8 @@ function M.rebuild(tick, interval)
   -- Bez volání hry (ani `valid`): neplatné spojky odhalí události a rozložená kontrola.
   for unit, coupler in pairs(storage.couplers) do
     check[#check + 1] = unit
-    edges[#edges + 1] = { id = unit, a = coupler.sides[1].seg, b = coupler.sides[2].seg, active = coupler.powered }
+    edges[#edges + 1] = { id = unit, a = coupler.sides[1].seg, b = coupler.sides[2].seg,
+      active = coupler.powered and coupler.enabled ~= false }
   end
   storage.networks, storage.coupler_net = {}, {}
   for index, built in ipairs(network.build(edges)) do
@@ -62,6 +104,7 @@ function M.rebuild(tick, interval)
         if side.seg and not net.reps[side.seg] then net.reps[side.seg] = side.rep end
       end
     end
+    net.interval = network_interval(net)
     storage.networks[index] = net
   end
   storage.check_list = check

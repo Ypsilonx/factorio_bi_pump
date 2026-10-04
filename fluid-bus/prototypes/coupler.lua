@@ -1,11 +1,12 @@
 --- Spojka busu: assembling-machine 1×1 bez receptu se dvěma oddělenými fluidboxy (kategorie fb-bus),
---- napájená elektřinou (drain), a skrytý konstantní kombinátor, přes který vysílá signály.
+--- napájená elektřinou (drain), a skrytý konstantní kombinátor (dva na spojku – červený a zelený drát).
 --- Typ zvolen podle spiku (spec 8.1): dva segmenty, napájení, dráty, rotace. Kapalinu přelévá skript.
 local M = {}
 
 M.NAME = "fb-bus-coupler"
 M.SIGNALS = "fb-bus-coupler-signals"
 M.CATEGORY = "fb-coupler"
+M.INTERVAL_SIGNAL = "fb-balance-interval"
 --- Objem fluidboxu spojky – započítá se do kapacity segmentu, proto malý. Laditelné.
 M.FLUID_VOLUME = 10
 --- Suroviny receptu: { kandidáti, počet } – první existující předmět vyhrává. Laditelné.
@@ -39,6 +40,7 @@ function M.ingredients(raw)
   end
   return list
 end
+
 
 --- Fluidbox spojky na jedné straně (jen kategorie fb-bus → napojí se jen na BUS trubky).
 --- @param production_type string "input" | "output"
@@ -76,7 +78,7 @@ local function led(orientation)
   return layer
 end
 
---- Prototypy spojky (kategorie, entita, skrytý kombinátor, předmět, signál). Volá se v data.lua.
+--- Prototypy spojky (kategorie, entita, skrytý kombinátor, předmět). Volá se v data.lua.
 --- @param power_kw number odběr spojky v kW (startup nastavení)
 --- @return table[]
 function M.prototypes(power_kw)
@@ -127,13 +129,19 @@ function M.prototypes(power_kw)
   signals.activity_led_sprites = nil
   signals.draw_circuit_wires = false
   signals.circuit_wire_max_distance = 1
+  --- Vstupní signál: hodnota N > 0 na kterékoli spojce sítě = interval vyrovnávání té sítě (ticky).
+  local interval = { type = "virtual-signal", name = M.INTERVAL_SIGNAL, subgroup = "virtual-signal",
+    order = "z[fluid-bus]-a[interval]", icons = {
+      { icon = "__base__/graphics/icons/signal/signal-clock.png", icon_size = 64 },
+      { icon = icons[1].icon, icon_size = 64, scale = 0.25, shift = { 8, 8 } },
+    } }
   return {
     { type = "recipe-category", name = M.CATEGORY },
     entity,
     signals,
+    interval,
     { type = "item", name = M.NAME, icons = icons, subgroup = "energy-pipe-distribution",
       order = "c[pump]-b[fb-bus-coupler]", place_result = M.NAME, stack_size = 50 },
-    { type = "virtual-signal", name = "fb-fill", icons = icons, subgroup = "virtual-signal", order = "z[fb-fill]" },
   }
 end
 

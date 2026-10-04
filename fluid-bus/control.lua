@@ -29,8 +29,9 @@ end
 --- Za kolik ticků projde rozložená kontrola všechny spojky (napojení, proud, signály, stav). Laditelné.
 local CHECK_INTERVAL = 60
 
---- Rozložená kontrola: za CHECK_INTERVAL projde všechny spojky – topologie (změna → přestavba sítí)
---- a signály se stavem. Rozložení zabrání špičkám ticku u velkých busů.
+--- Rozložená kontrola: za CHECK_INTERVAL projde všechny spojky – topologie, proud a zapnutí obvodem
+--- (změna → přestavba sítí), signál intervalu, výstupní signály a stav. Rozložení zabrání špičkám
+--- ticku u velkých busů; řízení obvodem se proto projeví se zpožděním nejvýš CHECK_INTERVAL.
 local function check_couplers()
   local list = storage.check_list
   if #list == 0 then return end
@@ -40,6 +41,7 @@ local function check_couplers()
     if not (coupler and coupler.entity.valid) or topology.refresh(coupler) then
       storage.dirty = true
     else
+      topology.read_interval(unit, coupler)
       signals.update_coupler(unit, coupler)
     end
     storage.check_cursor = storage.check_cursor % #list + 1

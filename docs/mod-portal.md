@@ -15,8 +15,10 @@ no matter how long the bus is or where the inputs and outputs are.
 - **Bus coupler** (1×1, electric) – place it in the bus instead of a pump. It connects **only to BUS
   pipes**, so the "one tank" bus needs dedicated infrastructure.
 - **Exact conservation** – fluid amount and temperature (steam) are preserved.
-- **Circuit network** – the coupler outputs the **bus fill (%)** and the total fluid amount. Burn the
-  surplus only above 90 %, start a backup source below 30 %.
+- **Circuit network** – both values under the icon of the fluid in the bus: **red wire = amount**,
+  **green wire = fill %**. Burn the surplus only above 90 %, start a backup source below 30 %.
+- **Circuit control** – disable a coupler by a condition (like a pump); the *Bus balancing interval*
+  signal sets how often its network is balanced.
 - **Status in the coupler window** – network size and fill, no power, not connected, mixed fluids.
 - **Status light** on the coupler: green = powered, yellow = low power, red = no power (glows at night).
 - **UPS friendly** – balancing is spread over ticks (whole network once per second by default).

@@ -15,7 +15,7 @@ Data stage:
 - `fluid-bus/prototypes/bus_marking_data.lua` – umístění „B“, **generované** z `blender/marking.toml`.
 - `fluid-bus/prototypes/research.lua` – výzkumy s dopočítanými prerekvizitami.
 - `fluid-bus/prototypes/coupler.lua` – spojka (assembling-machine 1×1 bez receptu, 2 fluidboxy `fb-bus`,
-  `drain`), skrytý kombinátor signálů, signál `fb-fill`.
+  `drain`), skrytý kombinátor signálů (dva na spojku: červený a zelený drát).
 
 Runtime (`control.lua` jen napojuje události):
 - `scripts/registry.lua` – evidence spojek ve `storage`, skryté kombinátory (drát s původem `script`).
@@ -23,8 +23,10 @@ Runtime (`control.lua` jen napojuje události):
 - `scripts/network.lua` – čistá logika: segmenty + aktivní spojky → sítě (union-find).
 - `scripts/balance_math.lua` – čistá logika: plán vyrovnání celé sítě (společné naplnění, přelití, konflikt).
 - `scripts/balancer.lua` – každou síť jednou za `fb-balance-interval` ticků srovná celou v jednom ticku.
-- `scripts/signals.lua` – signály `fb-fill` a množství kapaliny, `custom_status` spojky.
-- `scripts/remote.lua` – rozhraní `fb` (`network_of`, `rebuild`, `revalidate`, `stats`).
+- `scripts/signals.lua` – signály (červený drát: [kapalina] = množství, zelený: [kapalina] = %), `custom_status` spojky.
+- Řízení obvodem: vypnutí podmínkou (`topology.refresh` čte `control_behavior.disabled` → neaktivní hrana),
+  signál `fb-balance-interval` (`topology.read_interval`, síť bere nejmenší hodnotu ze svých spojek).
+- `scripts/remote.lua` – rozhraní `fb` (`network_of` vč. platného `interval`, `set_interval`, `rebuild`, `revalidate`, `stats`).
 
 Princip: kapalina se čte a zapisuje přes **sousední BUS trubku** (`insert_fluid`/`remove_fluid` na trubce
 pracují s celým segmentem; fluidbox stroje do potrubí neproudí – spec 8.1). Síť se vyrovná celá v jednom
@@ -128,7 +130,9 @@ Spustit `bash tools/link-mod.sh` a hru s modem, v editoru mapy (`/editor`) nebo 
 3. Ikony předmětů a výzkumů, názvy „BUS: Trubka“ a „Spojka busu“ v češtině i angličtině, popisky.
 4. Spojka: na běžnou trubku se nenapojí (konektory se nespojí), na BUS ano; rotace R; stav v okně
    spojky („Bus: N segmentů, X %“, „Bez proudu“, „Nepřipojeno k BUS trubce“, „Různé kapaliny“).
-5. Obvodová síť: drát ze spojky do lampy/kombinátoru ukáže signály „Naplnění busu (%)“ a množství kapaliny.
+5. Obvodová síť: červený drát ze spojky do lampy/kombinátoru ukáže [kapalina] = množství, zelený = %.
+   Podmínka zapnutí v okně spojky ji vypne (stav „Vypnuto obvodovou sítí“, žlutá kontrolka); signál
+   „Interval vyrovnávání busu“ jde vybrat a poslat konstantním kombinátorem.
 6. Blueprint a kopírování spojky (skrytý kombinátor se nesmí objevit v blueprintu), zbourání spojky
    (kapalina zůstane v trubkách).
 7. Vzhled spojky: sedí v řadě trubek (vodorovně i svisle), stín, kontrolka zelená s proudem, červená bez

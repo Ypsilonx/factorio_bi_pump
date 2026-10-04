@@ -9,7 +9,9 @@ Date: 2026-10-04
     - The whole network is balanced at once in a single tick, so all segments end up with the same
       fill level; handles fast modded pumps (tested at 12,000/s).
     - Fluid amount and temperature are preserved while balancing.
-    - The coupler outputs the bus fill (%) and the total fluid amount to the circuit network.
+    - Circuit network output under the icon of the bus fluid: red wire = total amount, green wire = fill %.
+    - Circuit control: enable/disable the coupler by a condition; the "Bus balancing interval" signal
+      sets the balancing interval of its network.
     - Coupler status in its window: network size and fill, no power, not connected, mixed fluids.
     - Coupler graphics: pressure-gauge fitting with a status light (green / yellow / red by power state).
     - Settings: coupler power (startup) and balancing interval (map setting, changeable while playing).

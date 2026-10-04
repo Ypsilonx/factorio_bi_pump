@@ -12,7 +12,8 @@ function M.register()
       local net = topology.network_of(unit)
       if not net then return nil end
       return { fill = net.fraction, amount = net.total_amount, fluid = net.fluid, segments = #net.segments,
-        buffer = 0, conflict = net.conflict, balanced_tick = net.balanced_tick }
+        buffer = 0, conflict = net.conflict, balanced_tick = net.balanced_tick,
+        interval = net.interval or settings.global["fb-balance-interval"].value }
     end,
     --- Diagnostika: počet přestaveb sítí od začátku hry.
     stats = function() return { rebuilds = storage.rebuilds or 0 } end,

@@ -112,4 +112,5 @@ data:extend({ { type = "mod-data", name = "fb-data", data = {
   bus_pipes = names,
   coupler = coupler.NAME,
   coupler_signals = coupler.SIGNALS,
+  interval_signal = coupler.INTERVAL_SIGNAL,
 } } })

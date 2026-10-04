@@ -10,7 +10,7 @@ end
 
 return {
   {
-    name = "spojka vysílá naplnění a množství, stav ok",
+    name = "červený drát = množství, zelený drát = procenta, obojí pod ikonou kapaliny; stav ok",
     setup = function(ctx)
       local top = column(ctx, 0, -6, -1)[1]
       ctx.c = H.place(ctx, "fb-bus-coupler", 0, 0)
@@ -19,11 +19,11 @@ return {
       top.insert_fluid({ name = "water", amount = 600 })
     end,
     steps = { { ticks = 400, run = function(ctx)
-      local red = defines.wire_connector_id.circuit_red
-      local fill = ctx.c.get_signal({ type = "virtual", name = "fb-fill" }, red)
-      local water = ctx.c.get_signal({ type = "fluid", name = "water" }, red)
-      H.truthy(fill >= 45 and fill <= 55, "naplnění ~50 % (" .. fill .. ")")
-      H.truthy(water >= 590 and water <= 600, "množství (" .. water .. ")")
+      local water = { type = "fluid", name = "water" }
+      local amount = ctx.c.get_signal(water, defines.wire_connector_id.circuit_red)
+      local percent = ctx.c.get_signal(water, defines.wire_connector_id.circuit_green)
+      H.truthy(amount >= 590 and amount <= 600, "červený = množství (" .. amount .. ")")
+      H.truthy(percent >= 45 and percent <= 55, "zelený = procenta (" .. percent .. ")")
       H.eq(ctx.c.custom_status.label[1], "fb-status.ok", "stav")
     end } },
   },

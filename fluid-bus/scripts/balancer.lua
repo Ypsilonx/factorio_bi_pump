@@ -56,7 +56,7 @@ end
 
 --- Vyrovná sítě, které jsou na řadě (nejvýš SEGMENT_BUDGET segmentů za tick, aspoň jednu síť).
 --- @param tick integer
---- @param interval integer interval vyrovnávání (ticky)
+--- @param interval integer interval vyrovnávání z nastavení mapy (síť ho může přebít signálem)
 function M.step(tick, interval)
   local nets = storage.networks
   local count = #nets
@@ -66,7 +66,7 @@ function M.step(tick, interval)
     storage.cursor = storage.cursor % count + 1
     if net.next_due <= tick then
       balance(net)
-      net.next_due = tick + interval
+      net.next_due = tick + (net.interval or interval)
       net.balanced_tick = tick
       budget = budget - #net.segments
       if budget <= 0 or storage.dirty then return end

@@ -46,15 +46,31 @@ V okně spojky (kliknutí) uvidíš:
   dokud jednu z nich neodstraníš.
 
 ## Obvodová síť
-Připoj drát ke spojce. Spojka vysílá:
-- **Naplnění busu (%)** – virtuální signál 0–100 za celou síť,
-- **množství kapaliny** v celé síti (signál dané kapaliny).
+Spojka vysílá oba údaje pod **ikonou kapaliny**, která busem teče (voda, ropa, pára…).
+Co čteš, určuje **barva drátu**:
+- **červený drát** – [kapalina] = **množství** kapaliny v celé síti,
+- **zelený drát** – [kapalina] = **naplnění** celé sítě v % (0–100).
 
-Příklady:
-- **Spal / vylij přebytek jen nad 90 %**: drát ze spojky do pumpy u spalovny, podmínka pumpy
-  „Naplnění busu > 90“.
-- **Zapni záložní zdroj pod 30 %**: drát ze spojky do pumpy záložního zdroje, podmínka
-  „Naplnění busu < 30“.
+Signály stejné barvy se ve Factoriu sčítají – zelený drát od spojky proto nevěď do sítě, kde už je
+stejná kapalina z jiného zdroje (např. z nádrže), jinak se procenta sečtou.
+
+Příklady (zelený drát ze spojky):
+- **Spal / vylij přebytek jen nad 90 %**: zelený drát do pumpy u spalovny, podmínka „[voda] > 90“.
+- **Zapni záložní zdroj pod 30 %**: zelený drát do pumpy záložního zdroje, podmínka „[voda] < 30“.
+
+### Řízení spojky
+- **Zapnutí/vypnutí** – v okně spojky zaškrtni „Zapnout/vypnout“ a nastav podmínku (jako u pumpy).
+  Vypnutá spojka nepřelévá, segmenty na jejích stranách se oddělí a stav ukáže **Vypnuto obvodovou
+  sítí** (žlutá kontrolka). Hodí se např. k odstavení části busu při údržbě.
+- **Interval vyrovnávání** – pošli do spojky signál **Interval vyrovnávání busu** (ikona hodin)
+  s hodnotou N (1–600): celá její síť se pak vyrovnává každých N ticků místo nastavení mapy.
+  Pošle-li se do jedné sítě víc hodnot, platí nejmenší. Bez signálu (nebo 0) platí nastavení mapy.
+  Příklad: v noci, kdy bus jen stojí, pošli 60 a ušetříš výkon; při špičce 2.
+
+Spojka změnu podmínky nebo signálu zaregistruje do **1 sekundy**.
+
+Pozor: podmínka spojky vidí i **její vlastní signály** (množství + procenta pod ikonou kapaliny,
+na jednom drátě se sečtou). Podmínku proto stav na jiném signálu, ne na kapalině busu.
 
 ## Časté chyby
 - **Spojka na běžné trubce** – nenapojí se; vyměň trubky kolem spojky za BUS trubky.
