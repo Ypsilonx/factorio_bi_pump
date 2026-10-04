@@ -63,12 +63,21 @@ Příklady:
 - **Dvě spojky těsně vedle sebe** nefungují (stav „Nepřipojeno k BUS trubce“) – mezi spojkami musí být
   aspoň jedna BUS trubka.
 
-## Nastavení modu (Nastavení → Mody → Při spuštění)
-- **Odběr spojky busu (kW)** – výchozí 50.
-- **Interval vyrovnávání (ticky)** – výchozí 60 (= 1 s). Menší hodnota = rychlejší vyrovnání, ale vyšší
-  zátěž; na velkém serveru nech výchozí.
+## Nastavení modu
+- **Odběr spojky busu (kW)** – Nastavení → Mody → Při spuštění, výchozí 50.
+- **Interval vyrovnávání (ticky)** – Nastavení → Mody → **Mapa**, mění se **za běhu** (i na serveru),
+  výchozí 5. Spojka každých N ticků srovná celou síť najednou – po vyrovnání mají všechny segmenty
+  stejné procento naplnění.
+  - **Menší interval** = menší výkyvy mezi segmenty a vyšší propustnost, ale víc práce pro hru.
+  - **Větší interval** = levnější, ale mezi vyrovnáními se segmenty víc rozejdou.
+
+### Rychlé pumpy (mody s pumpami 12 000/s apod.)
+Spojka nemá pevný strop průtoku. Mezi dvěma vyrovnáními se ale přítok a odběr musí vejít do segmentů:
+naplnění se rozejde zhruba o **2 × průtok × interval / kapacita segmentu**. Příklad pro 12 000/s
+a interval 5 ticků: segment o 100 trubkách ±10 %, o 300 trubkách ±3 %. Dlouhé segmenty busu tedy
+zvládnou i velmi rychlé pumpy; u krátkých segmentů a velkých průtoků zmenši interval.
 
 ## Výkon
-1000 spojek na busu dlouhém 30 000 políček stojí asi +0,3 ms na tick proti stejnému busu
-s vanilla pumpami (měřeno na Factorio 2.0.77). Krátký jednorázový zásek (~3 ms u 1000 spojek, u běžného
-busu se ~100 spojkami desetina) může nastat jen při změně zapojení u spojky nebo výpadku proudu.
+Bus se 110 spojkami (interval 5) stojí skript v průměru ~0,08 ms na tick, nejhůř ~0,4 ms
+(Factorio 2.0.77). Extrémní bus s 1000 spojkami v jedné síti stojí ~3 ms jednou za interval – u takového
+busu interval zvětši.

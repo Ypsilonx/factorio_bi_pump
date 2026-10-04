@@ -10,6 +10,7 @@ runner.register(require("cases.balance"))
 runner.register(require("cases.signals"))
 runner.register(require("cases.lifecycle"))
 runner.register(require("cases.robustness"))
+runner.register(require("cases.flow"))
 
 script.on_init(runner.on_init)
 script.on_event(defines.events.on_tick, runner.on_tick)

@@ -10,12 +10,12 @@ M.SIGNALS = data.coupler_signals
 function M.init()
   storage.couplers = storage.couplers or {}
   storage.networks = storage.networks or {}
-  storage.queue = storage.queue or {}
   storage.cursor = storage.cursor or 1
   storage.check_list = storage.check_list or {}
   storage.check_cursor = storage.check_cursor or 1
   storage.coupler_net = storage.coupler_net or {}
-  storage.segments = storage.segments or {}
+  -- Pozůstatky starší verze (rozložené vyrovnávání se zásobníkem).
+  storage.queue, storage.segments = nil, nil
   storage.dirty = true
 end
 

@@ -1,60 +1,76 @@
---- Rozložené vyrovnávání sítí busu: každý tick zpracuje díl fronty segmentů tak, aby celá fronta
---- prošla jednou za interval. Přebytek segmentu jde do zásobníku sítě, nedostatek se z něj doplní.
+--- Vyrovnávání sítí busu: každá síť se jednou za `fb-balance-interval` ticků srovná celá najednou
+--- v jednom ticku – přečte všechny segmenty, spočítá společné naplnění a přelije. Po vyrovnání mají
+--- všechny segmenty sítě stejné procento naplnění (žádné zpoždění ani trvalý rozdíl mezi segmenty).
 local m = require("scripts.balance_math")
 local topology = require("scripts.topology")
 
 local M = {}
 
---- Zpracuje jeden segment: vždy ho změří (i při konfliktu, aby se konflikt mohl zrušit); přelévá jen,
---- když síť zná všechny segmenty, má jednu kapalinu a segment má stejnou kapalinu.
---- @param entry table { net = index sítě, seg = segment }
-local function process(entry)
-  local net = storage.networks[entry.net]
-  if not net then return end
-  local rep = net.reps[entry.seg]
-  if not (rep and rep.valid) then
-    storage.dirty = true
-    return
+--- Kolik segmentů nejvýš vyrovnat v jednom ticku (přes více sítí); jedna síť se ale vždy vyrovná celá.
+--- Chrání před špičkou, když se ve stejném ticku sejde více velkých sítí. Laditelné.
+M.SEGMENT_BUDGET = 300
+
+--- Vyrovná jednu síť: přečte segmenty, odebere přebytky, doplní nedostatky (s teplotou odebrané
+--- kapaliny); co by se nevešlo, vrátí zpět do segmentů, ze kterých se bralo.
+--- @param net table síť ze storage.networks
+local function balance(net)
+  local reps, states = {}, {}
+  for i, segment in ipairs(net.segments) do
+    local rep = net.reps[segment]
+    if not (rep and rep.valid) then
+      storage.dirty = true
+      return
+    end
+    local name, amount, capacity = topology.read(rep)
+    reps[i], states[i] = rep, { fluid = name, amount = amount, capacity = capacity }
   end
-  local name, amount, capacity = topology.read(rep)
-  topology.record(net, entry.seg, name, amount, capacity)
-  if name and amount > 0 then
-    if net.fluid == nil then
-      net.fluid = name
-    elseif name ~= net.fluid then
-      net.conflict = true
+  local plan = m.plan_network(states)
+  net.conflict, net.fraction = plan.conflict, plan.fraction
+  net.total_amount, net.total_capacity = plan.total, plan.capacity
+  if not plan.conflict then net.fluid = plan.fluid end
+  if plan.conflict or not plan.fluid then return end
+  local removed, heat, donors = 0, 0, {}
+  for i, delta in ipairs(plan.deltas) do
+    if delta < 0 then
+      local fluid = reps[i].fluidbox[1]
+      local taken = reps[i].remove_fluid({ name = plan.fluid, amount = -delta })
+      removed = removed + taken
+      heat = heat + taken * (fluid and fluid.temperature or 0)
+      donors[#donors + 1] = reps[i]
     end
   end
-  if net.conflict or not net.fluid or net.known < #net.segments then return end
-  net.fraction = m.target_fraction(net.total_amount, net.buffer.amount, net.total_capacity)
-  local delta = m.plan(amount, capacity, net.fraction, net.buffer.amount)
-  if delta < 0 then
-    local fluid = rep.fluidbox[1]
-    local removed = rep.remove_fluid({ name = net.fluid, amount = -delta })
-    net.buffer = m.mix(net.buffer, removed, fluid and fluid.temperature)
-    topology.record(net, entry.seg, net.fluid, amount - removed, capacity)
-  elseif delta > 0 then
-    local inserted = rep.insert_fluid({ name = net.fluid, amount = delta, temperature = net.buffer.temperature })
-    net.buffer = m.take(net.buffer, inserted)
-    topology.record(net, entry.seg, net.fluid, amount + inserted, capacity)
+  if removed <= 0 then return end
+  local temperature = heat / removed
+  local left = removed
+  for i, delta in ipairs(plan.deltas) do
+    if delta > 0 and left > 0 then
+      left = left - reps[i].insert_fluid({ name = plan.fluid, amount = math.min(delta, left), temperature = temperature })
+    end
   end
+  for _, rep in ipairs(donors) do
+    if left <= 1e-9 then break end
+    left = left - rep.insert_fluid({ name = plan.fluid, amount = left, temperature = temperature })
+  end
+  if left > 1e-6 then log("fluid-bus: při vyrovnání nešlo vrátit " .. left .. " " .. plan.fluid) end
 end
 
---- Zpracuje díl fronty pro tento tick; na konci kola sítě přepočítá její kapalinu a konflikt.
-function M.step()
-  local queue = storage.queue
-  if #queue == 0 then return end
-  local interval = prototypes.mod_data["fb-data"].data.interval
-  for _ = 1, math.ceil(#queue / interval) do
-    local entry = queue[storage.cursor]
-    process(entry)
-    local nxt = storage.cursor % #queue + 1
-    if nxt == 1 or queue[nxt].net ~= entry.net then
-      local net = storage.networks[entry.net]
-      if net then topology.update_fluid(net) end
+--- Vyrovná sítě, které jsou na řadě (nejvýš SEGMENT_BUDGET segmentů za tick, aspoň jednu síť).
+--- @param tick integer
+--- @param interval integer interval vyrovnávání (ticky)
+function M.step(tick, interval)
+  local nets = storage.networks
+  local count = #nets
+  local budget = M.SEGMENT_BUDGET
+  for _ = 1, count do
+    local net = nets[storage.cursor]
+    storage.cursor = storage.cursor % count + 1
+    if net.next_due <= tick then
+      balance(net)
+      net.next_due = tick + interval
+      net.balanced_tick = tick
+      budget = budget - #net.segments
+      if budget <= 0 or storage.dirty then return end
     end
-    storage.cursor = nxt
-    if storage.dirty then return end
   end
 end
 

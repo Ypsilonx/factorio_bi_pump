@@ -19,17 +19,17 @@ Data stage:
 
 Runtime (`control.lua` jen napojuje události):
 - `scripts/registry.lua` – evidence spojek ve `storage`, skryté kombinátory (drát s původem `script`).
-- `scripts/topology.lua` – segmenty na stranách spojek, zástupné BUS trubky, přestavba sítí, vrácení
-  zásobníků do segmentů.
+- `scripts/topology.lua` – segmenty na stranách spojek, zástupné BUS trubky, přestavba sítí (bez čtení hry).
 - `scripts/network.lua` – čistá logika: segmenty + aktivní spojky → sítě (union-find).
-- `scripts/balance_math.lua` – čistá logika: cílové naplnění, plán přelití, míchání teplot.
-- `scripts/balancer.lua` – rozložený plánovač: za `fb-balance-interval` projde všechny segmenty.
+- `scripts/balance_math.lua` – čistá logika: plán vyrovnání celé sítě (společné naplnění, přelití, konflikt).
+- `scripts/balancer.lua` – každou síť jednou za `fb-balance-interval` ticků srovná celou v jednom ticku.
 - `scripts/signals.lua` – signály `fb-fill` a množství kapaliny, `custom_status` spojky.
-- `scripts/remote.lua` – rozhraní `fb` (`network_of`, `rebuild`, `revalidate`).
+- `scripts/remote.lua` – rozhraní `fb` (`network_of`, `rebuild`, `revalidate`, `stats`).
 
 Princip: kapalina se čte a zapisuje přes **sousední BUS trubku** (`insert_fluid`/`remove_fluid` na trubce
-pracují s celým segmentem; fluidbox stroje do potrubí neproudí – spec 8.1). Přebytek segmentu jde do
-zásobníku sítě, nedostatek se z něj doplní, takže množství se přesně zachovává.
+pracují s celým segmentem; fluidbox stroje do potrubí neproudí – spec 8.1). Síť se vyrovná celá v jednom
+ticku: přečtou se všechny segmenty, spočítá se společné naplnění (%), přebytky se odeberou a doplní tam,
+kde chybí (s teplotou odebrané kapaliny). Po vyrovnání mají všechny segmenty stejné %; množství se zachovává.
 
 Grafika:
 - `blender/marking.py` – „B“ nastříkané sprejem (šablona, rozprašek, ohnutí kolem válce, lesk):
@@ -43,7 +43,9 @@ Grafika:
 | Co | Kde |
 |---|---|
 | Odběr spojky (kW) | startup nastavení `fb-coupler-power` (výchozí 50) |
-| Jak často se vyrovná celá síť (ticky) | startup nastavení `fb-balance-interval` (výchozí 60) |
+| Jak často se vyrovná celá síť (ticky) | nastavení **mapy** `fb-balance-interval` (výchozí 5, mění se za běhu) |
+| Nejvýš segmentů vyrovnaných v jednom ticku (více sítí) | `fluid-bus/scripts/balancer.lua` – `SEGMENT_BUDGET` |
+| Jak často se kontroluje napojení, proud a signály spojek | `fluid-bus/control.lua` – `CHECK_INTERVAL` |
 | Odchylka, pod kterou se nepřelévá | `fluid-bus/scripts/balance_math.lua` – `TOLERANCE` |
 | Zpoždění přestavby sítí po změně (slučování změn) | `fluid-bus/control.lua` – `REBUILD_DELAY` |
 | Suroviny receptu spojky | `fluid-bus/prototypes/coupler.lua` – `INGREDIENTS` |
@@ -72,8 +74,8 @@ Grafika:
 ## Kompatibilita (ověřeno 2026-10-04, Factorio 2.0.77)
 | Mody | Výsledek | Vzniklé BUS varianty |
 |---|---|---|
-| vanilla | 36/36 (+1 přeskočen – recyklace jen s quality) | pipe, pipe-to-ground (výzkum `fb-fluid-bus` za `fluid-handling`) |
-| Space Age | 37/37 | pipe, pipe-to-ground; recyklační recepty BUS předmětů i spojky vznikají |
+| vanilla | 38/38 (+1 přeskočen – recyklace jen s quality) | pipe, pipe-to-ground (výzkum `fb-fluid-bus` za `fluid-handling`) |
+| Space Age | 39/39 | pipe, pipe-to-ground; recyklační recepty BUS předmětů i spojky vznikají |
 | pymodpack 3.0.0 (pyindustry 3.0.21, pyhightech 3.0.19, pyalienlife 3.0.67, …) | 6/6 | pipe, niobium-pipe, ht-pipes, vessel + jejich podzemní; každá za vlastním výzkumem `fb-fluid-bus-<trubka>` |
 | boblogistics 2.1.1 + boblibrary 2.1.0 | 6/6 | pipe, bob-copper-pipe, bob-steel-pipe, bob-plastic-pipe + jejich podzemní; plastová za `fb-fluid-bus-bob-plastic-pipe` (`plastics`) |
 | pipe-tiers 1.0.2 | 6/6 | BUS varianty mají stejný extent jako původní (volitelná závislost `? pipe-tiers` – načte se před námi) |
@@ -83,21 +85,23 @@ prochází všechny recepty podzemní, ne jen ten nejdřív dostupný.
 Mody, které v `data-final-fixes` mění trubky (Pipe Tiers), musí běžet před námi – patří do
 volitelných závislostí v `fluid-bus/info.json` a do `tests/fluid-bus-tests/info.json` (kontrola extentu).
 
-## Výkon (2026-10-04, Factorio 2.0.77, `tools/run-perf.sh 1000 1800`)
-Bus dlouhý 30 000 dlaždic, 1000 úseků po 29 trubkách, voda z infinity pipe na začátku, odběr na konci,
-napájení velkými sloupy. Stejný bus s vanilla pumpami jako srovnání. Interval vyrovnávání 60 ticků.
+## Výkon (2026-10-04, Factorio 2.0.77, `tools/run-perf.sh <počet> 1800`, interval vyrovnávání 5 ticků)
+Bus z úseků po 29 trubkách, voda z infinity pipe na začátku, odběr na konci, napájení velkými sloupy.
+Stejný bus s vanilla pumpami jako srovnání. Čísla „skript“ = sloupec `scriptUpdate` po ustálení (tick ≥ 600).
 
-| Varianta | průměr ms/tick | nejhorší tick |
-|---|---|---|
-| vanilla pumpy (1000 ks) | 0,202 | 0,55 ms |
-| spojky busu (1000 ks, jedna síť 1000 segmentů) | 0,526 | 3,05 ms (přestavba sítě) |
-| **rozdíl** | **+0,32** (cíl ≤ 1 ms) | ustálený běh ~1 ms |
+| Bus | spojky: průměr / nejhorší tick | pumpy: průměr / nejhorší tick | skript (ustálený běh) |
+|---|---|---|---|
+| 110 úseků (≈ tvůj bus) | 0,235 / 1,0 ms | 0,141 / 0,45 ms | průměr 0,077 ms, max 0,43 ms |
+| 1000 úseků (extrém) | 0,811 / 5,1 ms | 0,198 / 0,45 ms | vyrovnání celé sítě ~3,2 ms každých 5 ticků |
 
-- Nejhorší ticky jsou **přestavby sítě** (změna topologie: stavba/zboření u spojky, výpadek nebo náběh
-  proudu). Přestavba nečte hru, stojí ~3 ms na síť s 1000 spojkami (≈ 0,3 ms u busu se 110 spojkami)
-  a změny v okně 10 ticků se slučují (`REBUILD_DELAY` v `control.lua`). V ustáleném běhu žádné špičky.
-- Dřívější verze zapisovala signály celé sítě v jednom ticku (špičky 7–14 ms každou sekundu) – teď se
-  signály a stav spojek zapisují rozloženě a jen při změně.
+- Cena je úměrná **počtu segmentů v síti / interval**: vyrovnání sítě čte a zapisuje všechny segmenty
+  v jednom ticku (~3 µs na segment). U obřích sítí zvětši `fb-balance-interval` (nastavení mapy).
+- **Propustnost spojky**: mezi dvěma vyrovnáními se musí rozdíl vejít do segmentů. Při toku F (l/s),
+  intervalu K ticků a segmentech o kapacitě C se naplnění mezi vyrovnáními rozejde o ≈ 2·F·K/60/C.
+  Příklad: 12 000/s, K = 5, segment 100 trubek (10 000 l) → ±10 %; segment 300 trubek → ±3 %.
+  Test „průtok 12 000/s přes spojku“ to hlídá (odběr nestrádá ani o litr).
+- Přestavby sítě (změna topologie) nečtou hru, změny v okně 10 ticků se slučují (`REBUILD_DELAY`).
+- Signály a stav spojek se zapisují rozloženě (`CHECK_INTERVAL`) a jen při změně.
 - Scénář během běhu vypisuje stav sítě a počet přestaveb (`FB-PERF network … segments, fill …, rebuilds N`)
   – bez toho by šlo měřit nečinný bus (stalo se při prvním měření: zdroj energie mimo dosah sloupu).
 - Rozbor po ticích: `.test-run/perf-couplers/bench.log` (CSV v ns, sloupec `scriptUpdate`).

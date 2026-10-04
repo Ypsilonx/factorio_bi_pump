@@ -1,5 +1,5 @@
 --- Integrační testy odolnosti (nálezy z review): konflikt kapalin, změna kapaliny, výpadek proudu,
---- zbourání spojky s plným zásobníkem, skrytý kombinátor, klonování, dvojí registrace, spojky vedle sebe.
+--- skrytý kombinátor, klonování, dvojí registrace, spojky vedle sebe.
 local H = require("helpers")
 
 --- Svislá řada BUS trubek ve sloupci x pro řádky y1..y2.
@@ -26,28 +26,6 @@ end
 --- Počet skrytých kombinátorů na pozici spojky.
 local function hidden_count(ctx, coupler)
   return #ctx.surface.find_entities_filtered({ name = "fb-bus-coupler-signals", position = coupler.position })
-end
-
---- Kroky po jednom ticku, které čekají na stav zásobníku > 0 a pak spojku zbourají.
-local function wait_for_buffer_steps()
-  local steps = {}
-  for _ = 1, 300 do
-    steps[#steps + 1] = { ticks = 1, run = function(ctx)
-      if ctx.removed then return end
-      local info = remote.call("fb", "network_of", ctx.c.unit_number)
-      if info and info.buffer > 0 then
-        ctx.buffer = info.buffer
-        ctx.removed = true
-        ctx.c.destroy({ raise_destroy = true })
-      end
-    end }
-  end
-  steps[#steps + 1] = { ticks = 5, run = function(ctx)
-    H.truthy(ctx.removed, "spojka zbourána s plným zásobníkem")
-    H.truthy(math.abs(amount(ctx.a) + amount(ctx.b) - 600) < 0.01,
-      "zachováno i se zásobníkem " .. tostring(ctx.buffer) .. " (" .. (amount(ctx.a) + amount(ctx.b)) .. ")")
-  end }
-  return steps
 end
 
 return {
@@ -90,14 +68,6 @@ return {
         H.truthy(amount(ctx.b) > 100, "pára přetekla (" .. amount(ctx.b) .. ")")
       end },
     },
-  },
-  {
-    name = "zbourání spojky s plným zásobníkem zachová množství",
-    setup = function(ctx)
-      two_segments(ctx)
-      ctx.a.insert_fluid({ name = "water", amount = 600 })
-    end,
-    steps = wait_for_buffer_steps(),
   },
   {
     name = "výpadek proudu u běžící sítě síť rozpadne a hlásí Bez proudu",

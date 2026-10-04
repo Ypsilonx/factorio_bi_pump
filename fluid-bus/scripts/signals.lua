@@ -64,7 +64,7 @@ function M.update_coupler(unit, coupler)
     status(coupler, RED, { "fb-status.conflict" })
   else
     local fill = math.floor(net.fraction * 100 + 0.5)
-    local amount = net.fluid and math.min(MAX_SIGNAL, math.floor(net.total_amount + net.buffer.amount)) or nil
+    local amount = net.fluid and math.min(MAX_SIGNAL, math.floor(net.total_amount)) or nil
     write(coupler, net.fluid and fill or nil, net.fluid, amount)
     status(coupler, GREEN, { "fb-status.ok", #net.segments, fill })
   end

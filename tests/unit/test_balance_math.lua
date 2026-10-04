@@ -1,5 +1,5 @@
 ---@diagnostic disable: undefined-global
---- Testy matematiky vyrovnávání: cílové naplnění, plán přelití, míchání teplot.
+--- Testy plánu vyrovnání celé sítě najednou (cílové naplnění, přelití, konflikt, tolerance).
 local A = require("assert")
 local m = require("scripts.balance_math")
 
@@ -8,33 +8,47 @@ local function near(actual, expected, what)
   A.truthy(math.abs(actual - expected) < 1e-6, what .. ": čekáno " .. expected .. ", dostáno " .. actual)
 end
 
+--- Součet přelití (musí být 0 – nic nevzniká ani nemizí).
+local function sum(deltas)
+  local total = 0
+  for _, d in ipairs(deltas) do total = total + d end
+  return total
+end
+
 return {
-  { "cílové naplnění zahrnuje zásobník a je nejvýš 1", function()
-    near(m.target_fraction(300, 100, 1000), 0.4, "0.4")
-    near(m.target_fraction(2000, 0, 1000), 1, "strop 1")
-    near(m.target_fraction(0, 0, 0), 0, "nulová kapacita")
+  { "stejné kapacity: všechny segmenty na průměr", function()
+    local plan = m.plan_network({ { fluid = "water", amount = 600, capacity = 1000 },
+      { amount = 0, capacity = 1000 } })
+    near(plan.fraction, 0.3, "naplnění")
+    near(plan.deltas[1], -300, "odebrat 300")
+    near(plan.deltas[2], 300, "doplnit 300")
+    A.eq(plan.fluid, "water", "kapalina")
+    A.eq(plan.conflict, false, "bez konfliktu")
   end },
-  { "plán: přebytek odebrat, nedostatek doplnit jen kolik zásobník má", function()
-    near(m.plan(800, 1000, 0.5, 0), -300, "odebrat 300")
-    near(m.plan(100, 1000, 0.5, 250), 250, "doplnit jen 250")
-    near(m.plan(100, 1000, 0.5, 9999), 400, "doplnit 400")
+  { "různé kapacity: stejné procento, ne stejné litry", function()
+    local plan = m.plan_network({ { fluid = "water", amount = 600, capacity = 600 },
+      { amount = 0, capacity = 300 }, { amount = 0, capacity = 1000 } })
+    near(plan.fraction, 600 / 1900, "naplnění")
+    near(600 + plan.deltas[1], plan.fraction * 600, "A na cíl")
+    near(plan.deltas[3], plan.fraction * 1000, "C na cíl")
+    near(sum(plan.deltas), 0, "součet nula")
   end },
-  { "plán: v toleranci nic", function()
-    near(m.plan(499, 1000, 0.5, 100), 0, "odchylka 1 < tolerance")
+  { "dvě kapaliny = konflikt, nic se nepřelévá", function()
+    local plan = m.plan_network({ { fluid = "water", amount = 300, capacity = 1000 },
+      { fluid = "crude-oil", amount = 300, capacity = 1000 } })
+    A.eq(plan.conflict, true, "konflikt")
+    near(plan.deltas[1], 0, "nic")
+    near(plan.deltas[2], 0, "nic")
   end },
-  { "míchání: vážený průměr teplot", function()
-    local b = m.mix({ amount = 1000, temperature = 500 }, 1000, 165)
-    near(b.amount, 2000, "množství")
-    near(b.temperature, 332.5, "teplota")
-    local empty = m.mix({ amount = 0 }, 10, 15)
-    near(empty.temperature, 15, "prázdný zásobník převezme teplotu")
+  { "prázdná síť nemá kapalinu ani přelití", function()
+    local plan = m.plan_network({ { amount = 0, capacity = 1000 }, { amount = 0, capacity = 500 } })
+    A.eq(plan.fluid, nil, "bez kapaliny")
+    near(sum(plan.deltas), 0, "nic")
   end },
-  { "odběr ze zásobníku: zbytek nebo prázdný", function()
-    local b = m.take({ amount = 100, temperature = 200 }, 40)
-    near(b.amount, 60, "zbytek")
-    near(b.temperature, 200, "teplota zůstává")
-    local e = m.take({ amount = 100, temperature = 200 }, 100)
-    near(e.amount, 0, "prázdný")
-    A.eq(e.temperature, nil, "bez teploty")
+  { "odchylka pod tolerancí se nepřelévá a součet zůstane nula", function()
+    local plan = m.plan_network({ { fluid = "water", amount = 501, capacity = 1000 },
+      { amount = 499, capacity = 1000 }, { amount = 200, capacity = 1000 } })
+    near(sum(plan.deltas), 0, "součet nula")
+    A.truthy(plan.deltas[3] > 0, "nejprázdnější dostane")
   end },
 }

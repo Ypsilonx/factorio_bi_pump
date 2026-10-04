@@ -26,13 +26,15 @@ local function on_removed(event)
   if entity and entity.valid and entity.name == registry.COUPLER then registry.remove(entity.unit_number) end
 end
 
---- Rozložená kontrola: za interval projde všechny spojky – topologie (změna → přestavba sítí)
+--- Za kolik ticků projde rozložená kontrola všechny spojky (napojení, proud, signály, stav). Laditelné.
+local CHECK_INTERVAL = 60
+
+--- Rozložená kontrola: za CHECK_INTERVAL projde všechny spojky – topologie (změna → přestavba sítí)
 --- a signály se stavem. Rozložení zabrání špičkám ticku u velkých busů.
 local function check_couplers()
   local list = storage.check_list
   if #list == 0 then return end
-  local interval = prototypes.mod_data["fb-data"].data.interval
-  for _ = 1, math.ceil(#list / interval) do
+  for _ = 1, math.ceil(#list / CHECK_INTERVAL) do
     local unit = list[storage.check_cursor]
     local coupler = storage.couplers[unit]
     if not (coupler and coupler.entity.valid) or topology.refresh(coupler) then
@@ -48,18 +50,20 @@ end
 --- spojky postupně dostávající proud) se sloučí do jedné přestavby. Laditelné.
 local REBUILD_DELAY = 10
 
---- Každý tick: přestavba sítí (se zpožděním), rozložená kontrola spojek a díl vyrovnávání.
+--- Každý tick: přestavba sítí (se zpožděním), rozložená kontrola spojek a vyrovnání sítí na řadě.
+--- Interval vyrovnávání je nastavení mapy – jde měnit za běhu.
 --- @param event EventData.on_tick
 local function on_tick(event)
+  local interval = settings.global["fb-balance-interval"].value
   if storage.dirty then
     storage.dirty_tick = storage.dirty_tick or event.tick
     if event.tick - storage.dirty_tick >= REBUILD_DELAY then
-      topology.rebuild()
+      topology.rebuild(event.tick, interval)
       storage.dirty_tick = nil
     end
   end
   check_couplers()
-  balancer.step()
+  balancer.step(event.tick, interval)
 end
 
 script.on_init(registry.init)

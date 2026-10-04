@@ -35,17 +35,23 @@ no matter how long the bus is or where the inputs and outputs are.
           [C] = bus coupler   B = BUS pipe   whole bus = one tank
 ```
 
-## Settings (startup)
-- **Bus coupler power** – default 50 kW.
-- **Balancing interval** – default 60 ticks.
+## Settings
+- **Bus coupler power** (startup) – default 50 kW.
+- **Balancing interval** (map setting, changeable while playing) – default 5 ticks. Every N ticks a
+  coupler network is balanced as a whole in one tick; afterwards all segments have the same fill %.
+
+## Fast pumps (12,000/s and more)
+There is no fixed flow cap. Between two balancing ticks the fill of segments drifts by about
+2 × flow × interval / segment capacity – e.g. 12,000/s with interval 5: ±10 % for 100-pipe segments,
+±3 % for 300-pipe segments. Lower the interval for short segments and very fast pumps.
 
 ## Performance
-Factorio 2.0.77, bus 30,000 tiles long with 1000 segments:
+Factorio 2.0.77, balancing interval 5 ticks, script time after warm-up:
 
-| Variant | ms/tick |
-|---|---|
-| vanilla pumps (1000) | 0.202 |
-| bus couplers (1000, one network) | 0.526 |
+| Bus | average | worst tick |
+|---|---|---|
+| 110 couplers (one network) | 0.08 ms | 0.43 ms |
+| 1000 couplers (one network, extreme) | ~0.6 ms | ~3.2 ms once per interval |
 
 ## Compatibility
 Tested (headless integration tests) with: vanilla, Space Age, Pyanodon's modpack, Bob's Logistics,
