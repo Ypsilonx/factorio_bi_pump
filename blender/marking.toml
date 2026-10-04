@@ -1,0 +1,53 @@
+# Označení BUS trubek: „B“ nastříkané sprejem přes šablonu.
+# Rozměry v dlaždicích (1 dlaždice = 64 px při scale 0.5).
+[letter]
+text = "B"
+size = 0.36            # velikost písma (výška písmene je asi 0.7 × size)
+bold = 0.012           # zesílení tahu (šablonové písmo bývá tučné)
+stencil_gap = 0.016    # šířka mezery šablony mezi dříkem a bříšky (0 = bez mezery)
+stencil_at = 0.36      # poloha mezery jako podíl šířky písmene zleva
+
+[paint]
+color = [0.05, 0.05, 0.05]   # barva nástřiku (výchozí černá); náhled ji přepisuje barvami z [preview.colors]
+opacity = 0.98         # krytí barvy (pod ní mírně prosvítá kov)
+edge_soft = 0.006      # měkkost okraje nástřiku
+overspray = 0.35       # množství rozprašku kolem písmene (0 = žádný)
+overspray_reach = 0.03 # jak daleko od písmene rozprašek sahá
+patchiness = 0.12      # nerovnoměrnost nástřiku (0 = dokonale rovná barva)
+seed = 7               # semínko náhody (stejné = stejný výsledek při každém buildu)
+
+[shading]
+# Plasticita: písmeno je ohnuté kolem válce trubky a nasvícené jako jeho povrch.
+pipe_radius = 0.3      # poloměr trubky (zakřivení písmene a světla)
+light_from = [-1.0, 1.0, 1.3]  # směr, ODKUD svítí slunce (Factorio: zleva shora)
+ambient = 0.2          # jas barvy ve stínu (podíl)
+diffuse = 0.3          # jas barvy na straně ke slunci (podíl)
+specular = 0.18        # síla pololesklého odlesku barvy (0 = matná)
+shininess = 10         # ostrost odlesku (větší = užší odlesk)
+
+[mask]
+pixels = 64            # výsledný sprite 64×64 = 1 dlaždice
+supersample = 4        # výpočet ve vyšším rozlišení a zmenšení = hladké hrany
+
+[orientation]
+# Otočení písmene na svislých kusech ve stupních (90 = čte se zdola nahoru, -90 = shora dolů).
+vertical_rotation = 90
+
+[placement]
+# Kde na kusu trubky písmeno sedí: posun v dlaždicích (x doprava, y dolů – jako shift ve Factoriu)
+# a orientace masky. Klíče = tvary trubky; podzemní: north/south/east/west = strana napojení.
+# Hodnoty změřené z neprůhledných pixelů vanilla spritů (tělo trubky; u podzemní rovný kus nebo kopule,
+# u vodorovné podzemní střed kolena).
+straight_horizontal = { shift = [0.0, -0.05], orientation = "horizontal" }
+straight_vertical = { shift = [0.0, -0.1], orientation = "vertical" }
+east = { shift = [0.1, 0.05], orientation = "horizontal" }
+west = { shift = [-0.1, 0.05], orientation = "horizontal" }
+north = { shift = [0.0, -0.35], orientation = "vertical" }
+south = { shift = [0.0, -0.02], orientation = "vertical" }
+
+[preview]
+pixels_per_tile = 128
+background = [0.22, 0.20, 0.16]
+
+[preview.colors]
+cerna = [0.05, 0.05, 0.05]
