@@ -2,6 +2,7 @@
 local bus_pipes = require("prototypes.bus_pipes")
 local overlay = require("prototypes.bus_overlay")
 local research = require("prototypes.research")
+local coupler = require("prototypes.coupler")
 
 local pairs_, skipped = bus_pipes.collect(data.raw)
 for _, entry in ipairs(skipped) do
@@ -52,6 +53,22 @@ if base_spec then
   data:extend({ base_tech })
 end
 
+-- Recept spojky (suroviny podle toho, co ve hře existuje) – odemyká ho základní výzkum.
+local coupler_recipe = {
+  type = "recipe",
+  name = coupler.NAME,
+  enabled = base_tech == nil,
+  energy_required = 2,
+  ingredients = coupler.ingredients(data.raw),
+  results = { { type = "item", name = coupler.NAME, amount = 1 } },
+}
+data:extend({ coupler_recipe })
+if base_tech then table.insert(base_tech.effects, { type = "unlock-recipe", recipe = coupler.NAME }) end
+if mods["quality"] then
+  require("__quality__.prototypes.recycling").generate_recycling_recipe(coupler_recipe)
+end
+log("fluid-bus: " .. coupler.NAME .. " ← " .. serpent.line(coupler_recipe.ingredients))
+
 for _, pair in ipairs(pairs_) do
   local recipes = { create("pipe", pair.pipe, pair.pipe_item, 1) }
   if pair.underground then
@@ -91,4 +108,9 @@ for _, pair in ipairs(pairs_) do
   end
 end
 
-data:extend({ { type = "mod-data", name = "fb-data", data = { bus_pipes = names } } })
+data:extend({ { type = "mod-data", name = "fb-data", data = {
+  bus_pipes = names,
+  coupler = coupler.NAME,
+  coupler_signals = coupler.SIGNALS,
+  interval = settings.startup["fb-balance-interval"].value,
+} } })

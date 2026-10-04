@@ -6,6 +6,7 @@
     { "label": "Integrační testy (vanilla)", "type": "shell", "command": "tools/run-tests.sh vanilla", "group": "test", "problemMatcher": [] },
     { "label": "Integrační testy (Space Age)", "type": "shell", "command": "tools/run-tests.sh space-age", "group": "test", "problemMatcher": [] },
     { "label": "Kompatibilita (Pyanodon)", "type": "shell", "command": "tools/run-tests.sh mods pymodpack", "group": "test", "problemMatcher": [] },
-    { "label": "Kompatibilita (Bob's)", "type": "shell", "command": "tools/run-tests.sh mods boblogistics", "group": "test", "problemMatcher": [] }
+    { "label": "Kompatibilita (Bob's)", "type": "shell", "command": "tools/run-tests.sh mods boblogistics", "group": "test", "problemMatcher": [] },
+    { "label": "Výkonový test", "type": "shell", "command": "tools/run-perf.sh", "group": "test", "problemMatcher": [] }
   ]
 }

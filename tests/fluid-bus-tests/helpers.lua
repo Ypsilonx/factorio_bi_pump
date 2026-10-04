@@ -15,7 +15,8 @@ end
 
 --- Postaví entitu na dlaždici (x, y) relativně k výřezu testu.
 function H.place(ctx, name, x, y, extra)
-  local spec = { name = name, position = { ctx.origin.x + x + 0.5, ctx.origin.y + y + 0.5 }, force = "player" }
+  local spec = { name = name, position = { ctx.origin.x + x + 0.5, ctx.origin.y + y + 0.5 }, force = "player",
+    raise_built = true }
   for key, value in pairs(extra or {}) do spec[key] = value end
   local entity = ctx.surface.create_entity(spec)
   H.truthy(entity, "postavení " .. name)
@@ -79,6 +80,15 @@ function H.unreachable_ingredients()
   end
   table.sort(problems)
   return table.concat(problems, ", ")
+end
+
+--- Napájí dlaždici (x, y) testu: malý sloup vedle ní a nekonečný zdroj energie (vrátí zdroj).
+function H.power(ctx, x, y)
+  H.place(ctx, "small-electric-pole", x + 1, y + 1)
+  local eei = H.place(ctx, "electric-energy-interface", x + 3, y + 2)
+  eei.electric_buffer_size = 1e9
+  eei.power_production = 1e6
+  return eei
 end
 
 return H

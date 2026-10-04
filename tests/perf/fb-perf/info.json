@@ -1,0 +1,2 @@
+{ "name": "fb-perf", "version": "0.1.0", "title": "Fluid Bus – perf", "author": "Ypsilonx",
+  "factorio_version": "2.0", "dependencies": ["base", "? fluid-bus"] }

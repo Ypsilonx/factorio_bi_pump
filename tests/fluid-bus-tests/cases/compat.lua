@@ -58,6 +58,11 @@ return {
       end
     end
   end),
+  check("kompatibilita: spojka vznikla a je dostupná", function()
+    local name = prototypes.mod_data["fb-data"].data.coupler
+    H.truthy(prototypes.entity[name], "entita spojky")
+    H.truthy(prototypes.recipe[name].enabled or #H.unlocking_techs(name) > 0, "recept spojky dostupný")
+  end),
   check("kompatibilita: suroviny dostupné nejpozději s výzkumem", function()
     H.eq(H.unreachable_ingredients(), "", "nedostupné suroviny")
   end),
