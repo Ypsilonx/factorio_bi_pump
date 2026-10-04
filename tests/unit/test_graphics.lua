@@ -24,4 +24,11 @@ return {
   size_case("fluid-bus/graphics/entity/b-horizontal.png", 64),
   size_case("fluid-bus/graphics/entity/b-vertical.png", 64),
   size_case("fluid-bus/graphics/icons/b.png", 64),
+  size_case("fluid-bus/graphics/icons/fb-bus-coupler.png", 64),
+  size_case("fluid-bus/graphics/entity/fb-bus-coupler-horizontal.png", 128),
+  size_case("fluid-bus/graphics/entity/fb-bus-coupler-horizontal-shadow.png", 128),
+  size_case("fluid-bus/graphics/entity/fb-bus-coupler-horizontal-led.png", 128),
+  size_case("fluid-bus/graphics/entity/fb-bus-coupler-vertical.png", 128),
+  size_case("fluid-bus/graphics/entity/fb-bus-coupler-vertical-shadow.png", 128),
+  size_case("fluid-bus/graphics/entity/fb-bus-coupler-vertical-led.png", 128),
 }

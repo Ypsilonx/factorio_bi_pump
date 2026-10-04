@@ -14,8 +14,15 @@ M.INGREDIENTS = {
   { { "electronic-circuit" }, 5 },
   { { "steel-plate", "iron-plate" }, 5 },
 }
---- Odstín dočasné grafiky (vanilla trubka). Laditelné.
-M.TINT = { 0.55, 0.75, 1.0 }
+--- Barvy kontrolky podle stavu spojky (hra je aplikuje na bílou vrstvu kontrolky). Laditelné.
+--- Spojka nemá recept, takže při napájení je ve stavu „idle/no_recipe“ – to je „v pořádku“ = zelená.
+M.STATUS_COLORS = {
+  idle = { 0.2, 1, 0.3, 1 },
+  working = { 0.2, 1, 0.3, 1 },
+  disabled = { 1, 0.8, 0.1, 1 },
+  low_power = { 1, 0.8, 0.1, 1 },
+  no_power = { 1, 0.15, 0.1, 1 },
+}
 
 --- Suroviny receptu z kandidátů; chybějící předměty se vynechají.
 --- @param raw table data.raw
@@ -46,20 +53,34 @@ local function box(production_type, direction)
   }
 end
 
---- Dočasná grafika: obarvená vanilla trubka ve směru spojky.
---- @param file string "vertical" | "horizontal"
+--- Sprite spojky z blender/coupler (128 px = 2×2 dlaždice, scale 0.5).
+--- @param orientation string "vertical" | "horizontal"
+--- @param layer string|nil "" (těleso), "-shadow" (stín), "-led" (kontrolka)
 --- @return table Animation
-local function sprite(file)
-  return { filename = "__base__/graphics/entity/pipe/pipe-straight-" .. file .. ".png",
-    width = 128, height = 128, scale = 0.5, frame_count = 1, tint = M.TINT }
+local function sprite(orientation, layer)
+  return { filename = "__fluid-bus__/graphics/entity/fb-bus-coupler-" .. orientation .. (layer or "") .. ".png",
+    width = 128, height = 128, scale = 0.5, frame_count = 1 }
+end
+
+--- Těleso se stínem pro jednu orientaci.
+local function body(orientation)
+  local shadow = sprite(orientation, "-shadow")
+  shadow.draw_as_shadow = true
+  return { layers = { sprite(orientation), shadow } }
+end
+
+--- Kontrolka obarvená podle stavu – svítí i v noci.
+local function led(orientation)
+  local layer = sprite(orientation, "-led")
+  layer.draw_as_glow = true
+  return layer
 end
 
 --- Prototypy spojky (kategorie, entita, skrytý kombinátor, předmět, signál). Volá se v data.lua.
 --- @param power_kw number odběr spojky v kW (startup nastavení)
 --- @return table[]
 function M.prototypes(power_kw)
-  local icons = { { icon = "__base__/graphics/icons/pump.png", icon_size = 64, tint = M.TINT },
-    { icon = "__fluid-bus__/graphics/icons/b.png", icon_size = 64 } }
+  local icons = { { icon = "__fluid-bus__/graphics/icons/fb-bus-coupler.png", icon_size = 64 } }
   local entity = {
     type = "assembling-machine",
     name = M.NAME,
@@ -80,10 +101,17 @@ function M.prototypes(power_kw)
     allowed_effects = {},
     circuit_wire_max_distance = 9,
     circuit_connector = table.deepcopy(data.raw.pump.pump.circuit_connector),
-    graphics_set = { animation = {
-      north = sprite("vertical"), south = sprite("vertical"),
-      east = sprite("horizontal"), west = sprite("horizontal"),
-    } },
+    graphics_set = {
+      animation = { north = body("vertical"), south = body("vertical"),
+        east = body("horizontal"), west = body("horizontal") },
+      status_colors = M.STATUS_COLORS,
+      working_visualisations = { {
+        apply_tint = "status",
+        always_draw = true,
+        north_animation = led("vertical"), south_animation = led("vertical"),
+        east_animation = led("horizontal"), west_animation = led("horizontal"),
+      } },
+    },
     localised_description = { "entity-description.fb-bus-coupler" },
   }
   local signals = table.deepcopy(data.raw["constant-combinator"]["constant-combinator"])

@@ -18,6 +18,7 @@ no matter how long the bus is or where the inputs and outputs are.
 - **Circuit network** – the coupler outputs the **bus fill (%)** and the total fluid amount. Burn the
   surplus only above 90 %, start a backup source below 30 %.
 - **Status in the coupler window** – network size and fill, no power, not connected, mixed fluids.
+- **Status light** on the coupler: green = powered, yellow = low power, red = no power (glows at night).
 - **UPS friendly** – balancing is spread over ticks (whole network once per second by default).
 
 ## How to use
@@ -58,5 +59,4 @@ Tested (headless integration tests) with: vanilla, Space Age, Pyanodon's modpack
 Pipe Tiers. BUS variants are generated from all pipes in the game, so other pipe mods should work too.
 
 ## Known limitations (v0.1)
-- Temporary coupler graphics (tinted pipe) – a proper model comes in a later version.
 - No flow limit per coupler yet (the bus is a perfect "one tank").

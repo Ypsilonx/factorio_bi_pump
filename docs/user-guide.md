@@ -35,6 +35,9 @@ BUS trubka se napojuje i na běžné trubky. **Spojka busu se napojí jen na BUS
 ```
 
 ## Stav spojky
+Kontrolka na elektrické skříňce spojky: **zelená** = má proud a pracuje, **žlutá** = málo proudu,
+**červená** = bez proudu. V noci svítí.
+
 V okně spojky (kliknutí) uvidíš:
 - **Bus: N segmentů, X %** – vše v pořádku, síť má N segmentů naplněných na X %.
 - **Bez proudu** – spojka nemá elektřinu, segmenty na jejích stranách zůstanou oddělené.

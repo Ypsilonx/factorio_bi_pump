@@ -1,0 +1,45 @@
+# Spojka busu – manometrová armatura. Rozměry v dlaždicích (1 = jedna dlaždice), osa trubky = X modelu.
+# Pro svislou orientaci se model otočí o 90° kolem Z. Barvy jsou lineární RGB (0–1).
+
+[pipe]
+radius = 0.28         # poloměr trubky (napojuje se na vanilla trubky – kalibrováno náhledem)
+height = 0.42         # výška osy trubky nad zemí
+screen_offset = -0.3  # posun modelu ke kameře (osa Y), aby osa trubky seděla na střed dlaždice jako u vanilla
+flange_radius = 0.34  # poloměr přírub na koncích
+flange_thickness = 0.07
+flange_x = 0.45       # poloha přírub od středu
+bolts = 8             # šroubů na přírubě
+color = [0.17, 0.15, 0.12]
+
+[housing]
+radius = 0.38         # těleso armatury uprostřed
+length = 0.52
+ring = 0.035          # lem na koncích tělesa
+color = [0.015, 0.05, 0.065] # natřené těleso (tmavá petrolejová)
+
+[gauge]
+radius = 0.22         # manometr na tělese
+thickness = 0.045
+neck = 0.07           # krček mezi tělesem a manometrem
+tilt = 40             # sklon ciferníku ke kameře (stupně)
+face = [0.85, 0.83, 0.76]
+needle = [0.6, 0.03, 0.02]
+bezel = [0.45, 0.33, 0.12]  # mosazný rámeček
+
+[marking]
+# Nastříkané „B“ na čele tělesa (pod manometrem, natočené ke kameře). Světlé – černé na tmavém tělese splývá.
+text = "B"
+size = 0.34           # velikost písma
+angle = 50            # poloha na obvodu tělesa: úhel od vrcholu směrem ke kameře (stupně)
+x = -0.13             # posun podél osy trubky
+color = [0.8, 0.78, 0.7]
+
+[power]
+box = [0.17, 0.13, 0.15]    # elektrická skříňka (x, y, z)
+led_radius = 0.036          # poloměr kontrolky na skříňce
+offset = [0.25, -0.17]      # posun skříňky od středu (x, y) – vpravo nahoře, mírně ke kameře
+color = [0.2, 0.17, 0.03]   # natřená skříňka (tmavě žlutá)
+
+[render]
+frame_px = 128        # snímek 2×2 dlaždice, ve hře scale 0.5
+icon_px = 64

@@ -38,6 +38,10 @@ Grafika:
   `blender.exe -b --factory-startup -P blender/preview_marking.py -- fluid-bus/graphics/entity <náhled.png>`
 - `blender/build_overlay.py` – ikona „B“ do menu stavby
   (`blender.exe -b --factory-startup -P blender/build_overlay.py -- fluid-bus`).
+- `blender/coupler/build_coupler.py` – spojka (manometrová armatura): sprity svisle i vodorovně, stín,
+  kontrolka (bílá, hra ji obarví podle stavu) a ikona; náhled vedle vanilla trubek:
+  `blender.exe -b --factory-startup -P blender/coupler/build_coupler.py -- fluid-bus [náhled.png]`
+  (model `model.py`, materiály a render převzaté ze Storage Optimizeru `fb_materials.py`, `fb_render.py`).
 
 ## Kde ladit hodnoty
 | Co | Kde |
@@ -50,7 +54,8 @@ Grafika:
 | Zpoždění přestavby sítí po změně (slučování změn) | `fluid-bus/control.lua` – `REBUILD_DELAY` |
 | Suroviny receptu spojky | `fluid-bus/prototypes/coupler.lua` – `INGREDIENTS` |
 | Objem fluidboxu spojky | `fluid-bus/prototypes/coupler.lua` – `FLUID_VOLUME` |
-| Odstín dočasné grafiky spojky | `fluid-bus/prototypes/coupler.lua` – `TINT` |
+| Vzhled spojky (rozměry, barvy tělesa, manometr, skříňka, „B“) | `blender/coupler/coupler.toml` (pak spustit build spojky) |
+| Barvy kontrolky podle stavu | `fluid-bus/prototypes/coupler.lua` – `STATUS_COLORS` |
 | Surovina značení v receptu BUS trubky | `fluid-bus/prototypes/bus_pipes.lua` – `MARKING` |
 | Množství značení na kus | `fluid-bus/prototypes/bus_pipes.lua` – `MARKING_PER_PIECE` |
 | Doba výroby BUS varianty | `fluid-bus/prototypes/bus_pipes.lua` – `CRAFT_TIME` |
@@ -126,4 +131,5 @@ Spustit `bash tools/link-mod.sh` a hru s modem, v editoru mapy (`/editor`) nebo 
 5. Obvodová síť: drát ze spojky do lampy/kombinátoru ukáže signály „Naplnění busu (%)“ a množství kapaliny.
 6. Blueprint a kopírování spojky (skrytý kombinátor se nesmí objevit v blueprintu), zbourání spojky
    (kapalina zůstane v trubkách).
-7. Dočasná grafika spojky (obarvená trubka) – finální model je v0.2.
+7. Vzhled spojky: sedí v řadě trubek (vodorovně i svisle), stín, kontrolka zelená s proudem, červená bez
+   proudu, žlutá při nedostatku; v noci svítí.
