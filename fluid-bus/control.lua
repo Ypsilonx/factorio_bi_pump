@@ -1,0 +1,1 @@
+-- Runtime modu (spojka – plán 2). Jen napojuje události na moduly ze scripts/.

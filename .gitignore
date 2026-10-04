@@ -1,0 +1,15 @@
+# Sestavené balíčky modu (FMTK / ruční zip)
+*.zip
+# Lokální stav VSCode / FMTK
+.vscode/factorio/
+.vscode/*.log
+# Běhy testů a sestavené balíčky
+.test-run/
+dist/
+# Mezivýsledky renderu a zálohy Blenderu
+blender/renders/
+*.blend1
+__pycache__/
+# Zahazovací spike a pracovní prostor plánů (superpowers)
+spike/
+.superpowers/

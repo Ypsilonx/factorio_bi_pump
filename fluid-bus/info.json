@@ -1,0 +1,9 @@
+{
+  "name": "fluid-bus",
+  "version": "0.1.0",
+  "title": "Fluid Bus",
+  "author": "Ypsilonx",
+  "factorio_version": "2.0",
+  "description": "BUS variants of every pipe in the game. Bus couplers join all BUS pipe segments into one network with an even fill level – the whole main bus behaves like a single tank.",
+  "dependencies": ["base >= 2.0.0", "? pipe-tiers"]
+}

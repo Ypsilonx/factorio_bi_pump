@@ -1,0 +1,11 @@
+{
+  "version": "2.0.0",
+  "options": { "shell": { "executable": "C:\Program Files\Git\bin\bash.exe", "args": ["-c"] } },
+  "tasks": [
+    { "label": "Unit testy", "type": "shell", "command": "tools/run-unit.sh", "group": "test", "problemMatcher": [] },
+    { "label": "Integrační testy (vanilla)", "type": "shell", "command": "tools/run-tests.sh vanilla", "group": "test", "problemMatcher": [] },
+    { "label": "Integrační testy (Space Age)", "type": "shell", "command": "tools/run-tests.sh space-age", "group": "test", "problemMatcher": [] },
+    { "label": "Kompatibilita (Pyanodon)", "type": "shell", "command": "tools/run-tests.sh mods pymodpack", "group": "test", "problemMatcher": [] },
+    { "label": "Kompatibilita (Bob's)", "type": "shell", "command": "tools/run-tests.sh mods boblogistics", "group": "test", "problemMatcher": [] }
+  ]
+}

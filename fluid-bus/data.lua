@@ -1,0 +1,1 @@
+-- Prototypy nezávislé na jiných modech (spojka – plán 2).

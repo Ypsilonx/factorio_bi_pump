@@ -1,0 +1,5 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.1.0
+Date: 2026-10-04
+  Features:
+    - BUS variants of every pipe and underground pipe in the game, including pipes from other mods.
