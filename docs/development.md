@@ -68,7 +68,7 @@ Grafika:
 | Velikost, tučnost, mezera šablony | `blender/marking.toml` – `[letter]` |
 | Ikona „B“ v menu stavby | `blender/build_overlay.py` – `TEXT_SIZE`, `OUTLINE` |
 | Cena výzkumu (násobič) | `fluid-bus/prototypes/research.lua` – `TECH_COUNT_MULTIPLIER` |
-| Prerekvizity základního výzkumu | `fluid-bus/prototypes/research.lua` – `BASE_ITEMS` |
+| Prerekvizity základního výzkumu (= výzkumy surovin spojky) | `fluid-bus/prototypes/coupler.lua` – `INGREDIENTS` |
 
 ## Testy
 - Unit: `bash tools/run-unit.sh`

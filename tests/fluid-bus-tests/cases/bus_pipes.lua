@@ -20,7 +20,7 @@ return {
     H.eq(recipe.enabled, false, "zamčený")
     local techs = H.unlocking_techs("fb-bus-pipe")
     H.eq(techs[1], "fb-fluid-bus", "odemyká fb-fluid-bus")
-    H.truthy(prototypes.technology["fb-fluid-bus"].prerequisites["fluid-handling"], "prerekvizita fluid-handling")
+    H.truthy(H.requires("fb-fluid-bus", "fluid-handling"), "vyžaduje fluid-handling (i nepřímo)")
   end),
   {
     name = "BUS trubka se napojí na běžnou (jeden segment)",

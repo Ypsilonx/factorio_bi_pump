@@ -34,8 +34,8 @@ local function create(type_name, source, source_item, count)
   return recipe
 end
 
--- Základní výzkum: prerekvizity = výzkumy pumpy a značení.
-local base_items = { table.unpack(research.BASE_ITEMS) }
+-- Základní výzkum: prerekvizity = výzkumy všech surovin spojky (pumpa první = spouštěč) a značení.
+local base_items = coupler.ingredient_names(data.raw)
 if marking then base_items[#base_items + 1] = marking end
 local base_spec = research.technology(data.raw, research.techs_for_items(data.raw, base_items),
   research.trigger_item(data.raw, base_items))

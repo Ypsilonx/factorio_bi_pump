@@ -9,8 +9,6 @@ local M = {}
 M.PREFIX = "fb-"
 --- Jméno základního výzkumu (spojka + BUS trubky dostupné spolu s ní).
 M.BASE_TECH = "fb-fluid-bus"
---- Předměty, jejichž výzkumy jsou prerekvizitou základního výzkumu (pumpa a suroviny spojky).
-M.BASE_ITEMS = { "pump", "electronic-circuit" }
 --- Násobič počtu jednotek proti nejdražší přímé prerekvizitě (mimo vlastní výzkumy). Laditelné.
 M.TECH_COUNT_MULTIPLIER = 1.5
 

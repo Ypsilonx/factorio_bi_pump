@@ -62,6 +62,7 @@ return {
     local name = prototypes.mod_data["fb-data"].data.coupler
     H.truthy(prototypes.entity[name], "entita spojky")
     H.truthy(prototypes.recipe[name].enabled or #H.unlocking_techs(name) > 0, "recept spojky dostupný")
+    H.log_tech("fb-fluid-bus")
   end),
   check("kompatibilita: suroviny dostupné nejpozději s výzkumem", function()
     H.eq(H.unreachable_ingredients(), "", "nedostupné suroviny")

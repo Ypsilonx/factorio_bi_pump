@@ -16,7 +16,8 @@ trubkách. V menu stavby má ikona „B“ v rohu. Jmenuje se „BUS: <původní
 BUS trubka se napojuje i na běžné trubky. **Spojka busu se napojí jen na BUS trubky.**
 
 ## Postup krok za krokem
-1. Vyzkoumej **Kapalinový bus** (po výzkumu pumpy). Trubky z modů za pozdějším výzkumem mají vlastní
+1. Vyzkoumej **Kapalinový bus** (ve vanille po pokročilých obvodech, v modech po výzkumech surovin
+   spojky). Trubky z modů za pozdějším výzkumem mají vlastní
    výzkum „Kapalinový bus: <trubka>“.
 2. Postav bus z **BUS trubek** – nebo stávající bus **přestav**: BUS trubku můžeš postavit přímo přes
    běžnou (kapalina zůstane), případně použij upgrade planner (trubka → BUS: trubka).

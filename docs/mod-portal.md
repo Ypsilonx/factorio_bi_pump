@@ -24,7 +24,7 @@ no matter how long the bus is or where the inputs and outputs are.
 - **UPS friendly** – balancing is spread over ticks (whole network once per second by default).
 
 ## How to use
-1. Research **Fluid bus** (after the pump technology).
+1. Research **Fluid bus** (after advanced circuits in vanilla; in overhaul mods after the techs of the coupler ingredients).
 2. Build the bus from BUS pipes – or upgrade your existing bus: build BUS pipes over the old ones
    (fluid is kept) or use the upgrade planner.
 3. Replace the bus pumps with **bus couplers** and power them.

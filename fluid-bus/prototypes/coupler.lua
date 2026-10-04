@@ -10,10 +10,13 @@ M.INTERVAL_SIGNAL = "fb-balance-interval"
 --- Objem fluidboxu spojky – započítá se do kapacity segmentu, proto malý. Laditelné.
 M.FLUID_VOLUME = 10
 --- Suroviny receptu: { kandidáti, počet } – první existující předmět vyhrává. Laditelné.
+--- Výzkum spojky se automaticky zařadí až za výzkumy všech surovin (pokročilé obvody ho posunou dál).
+--- Trubka místo plechu: v overhaul modech (Pyanodon) má trubka vlastní, dražší výrobu.
 M.INGREDIENTS = {
   { { "pump" }, 1 },
   { { "electronic-circuit" }, 5 },
-  { { "steel-plate", "iron-plate" }, 5 },
+  { { "advanced-circuit" }, 2 },
+  { { "pipe", "iron-plate" }, 5 },
 }
 --- Barvy kontrolky podle stavu spojky (hra je aplikuje na bílou vrstvu kontrolky). Laditelné.
 --- Spojka nemá recept, takže při napájení je ve stavu „idle/no_recipe“ – to je „v pořádku“ = zelená.
@@ -41,6 +44,14 @@ function M.ingredients(raw)
   return list
 end
 
+--- Jména surovin receptu (pro prerekvizity výzkumu spojky).
+--- @param raw table data.raw
+--- @return string[]
+function M.ingredient_names(raw)
+  local names = {}
+  for _, ingredient in ipairs(M.ingredients(raw)) do names[#names + 1] = ingredient.name end
+  return names
+end
 
 --- Fluidbox spojky na jedné straně (jen kategorie fb-bus → napojí se jen na BUS trubky).
 --- @param production_type string "input" | "output"

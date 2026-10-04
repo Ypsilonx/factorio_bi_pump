@@ -48,7 +48,7 @@ local function closure(tech)
   return seen
 end
 
---- Suroviny receptů BUS trubek, které nejdou vyrobit nejpozději s výzkumem, jenž recept odemyká.
+--- Suroviny receptů spojky a BUS trubek, které nejdou vyrobit nejpozději s výzkumem, jenž recept odemyká.
 --- @return string prázdný řetězec = vše v pořádku
 function H.unreachable_ingredients()
   local producers = {}
@@ -61,7 +61,9 @@ function H.unreachable_ingredients()
     end
   end
   local problems = {}
-  for _, name in ipairs(prototypes.mod_data["fb-data"].data.bus_pipes) do
+  local data = prototypes.mod_data["fb-data"].data
+  local recipes = { data.coupler, table.unpack(data.bus_pipes) }
+  for _, name in ipairs(recipes) do
     local recipe = prototypes.recipe[name]
     local known = {}
     for _, tech in ipairs(H.unlocking_techs(name)) do
@@ -89,6 +91,26 @@ function H.power(ctx, x, y)
   eei.electric_buffer_size = 1e9
   eei.power_production = 1e6
   return eei
+end
+
+--- Vyžaduje výzkum (i nepřímo) jiný výzkum?
+--- @param tech string
+--- @param required string
+--- @return boolean
+function H.requires(tech, required)
+  return closure(prototypes.technology[tech])[required] == true
+end
+
+--- Zapíše do logu prerekvizity a cenu výzkumu (diagnostika napříč mody).
+--- @param name string
+function H.log_tech(name)
+  local tech = prototypes.technology[name]
+  local packs = {}
+  for _, pack in ipairs(tech.research_unit_ingredients) do packs[#packs + 1] = pack.name end
+  local prerequisites = {}
+  for prerequisite in pairs(tech.prerequisites) do prerequisites[#prerequisites + 1] = prerequisite end
+  log("fluid-bus test: " .. name .. " ← " .. table.concat(prerequisites, ", ") .. "; "
+    .. tech.research_unit_count .. "× " .. table.concat(packs, "+"))
 end
 
 return H

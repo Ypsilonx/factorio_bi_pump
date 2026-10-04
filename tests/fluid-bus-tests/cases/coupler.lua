@@ -13,6 +13,11 @@ return {
     H.truthy(prototypes.entity["fb-bus-coupler"], "entita")
     H.eq(H.unlocking_techs("fb-bus-coupler")[1], "fb-fluid-bus", "výzkum")
   end),
+  check("výzkum spojky je až po pokročilých obvodech (pokud ve hře jsou)", function()
+    H.log_tech("fb-fluid-bus")
+    local circuit_tech = H.unlocking_techs("advanced-circuit")[1]
+    if circuit_tech then H.truthy(H.requires("fb-fluid-bus", circuit_tech), "vyžaduje " .. circuit_tech) end
+  end),
   {
     name = "spojka se na běžnou trubku nenapojí, na BUS ano (dva segmenty)",
     setup = function(ctx)
