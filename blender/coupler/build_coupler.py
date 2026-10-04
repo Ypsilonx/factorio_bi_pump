@@ -6,6 +6,7 @@ Výstupy (do složky modu):
     graphics/entity/fb-bus-coupler-{vertical,horizontal}-shadow.png  stín (draw_as_shadow)
     graphics/entity/fb-bus-coupler-{vertical,horizontal}-led.png     kontrolka (bílá, hra obarví podle stavu)
     graphics/icons/fb-bus-coupler.png                                ikona 64×64
+    thumbnail.png                                                    náhled modu 144×144
 Náhled (volitelný): spojka v řadě vanilla trubek vodorovně i svisle – k ladění rozměrů v coupler.toml.
 Skript vždy začíná z prázdné scény (idempotentní). Moduly: model.py, fb_materials.py, fb_render.py.
 """
@@ -137,6 +138,14 @@ def main():
     icon = render_layer(scene, work, "icon", "base", parts, ground, cfg["render"]["icon_px"])
     (mod / "graphics" / "icons").mkdir(parents=True, exist_ok=True)
     R.save_pixels(icon, str(mod / "graphics" / "icons" / "fb-bus-coupler.png"))
+
+    # Náhled modu (seznam modů ve hře, mod portál): spojka s rozsvícenou zelenou kontrolkou.
+    thumb_px = cfg["render"]["thumbnail_px"]
+    camera.data.ortho_scale = cfg["render"]["thumbnail_scale"]
+    R.setup_render(scene, thumb_px)
+    thumb = render_layer(scene, work, "thumbnail", "base", parts, ground, thumb_px)
+    light = render_led(scene, work, "thumbnail-led", parts, led, ground)
+    R.save_pixels(R.over(thumb, colorize(light, (0.2, 1.0, 0.3))), str(mod / "thumbnail.png"))
 
     if len(args) > 1:
         preview(frames, Path(args[1]).resolve())

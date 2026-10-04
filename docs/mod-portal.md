@@ -21,7 +21,8 @@ no matter how long the bus is or where the inputs and outputs are.
   signal sets how often its network is balanced.
 - **Status in the coupler window** – network size and fill, no power, not connected, mixed fluids.
 - **Status light** on the coupler: green = powered, yellow = low power, red = no power (glows at night).
-- **UPS friendly** – balancing is spread over ticks (whole network once per second by default).
+- **UPS friendly** – networks are balanced every 5 ticks by default (map setting), large buses are
+  spread over ticks; see Performance below.
 
 ## How to use
 1. Research **Fluid bus** (after advanced circuits in vanilla; in overhaul mods after the techs of the coupler ingredients).
@@ -60,5 +61,9 @@ Factorio 2.0.77, balancing interval 5 ticks, script time after warm-up:
 Tested (headless integration tests) with: vanilla, Space Age, Pyanodon's modpack, Bob's Logistics,
 Pipe Tiers. BUS variants are generated from all pipes in the game, so other pipe mods should work too.
 
-## Known limitations (v0.1)
-- No flow limit per coupler yet (the bus is a perfect "one tank").
+## Known limitations
+- A coupler's enable condition also sees the coupler's own output signals (amount + fill % under
+  the fluid icon). Base the condition on a different signal.
+- Steam of different temperatures in one network is mixed (weighted average) – keep 165 °C and
+  500 °C steam on separate buses.
+- Two couplers directly next to each other do not connect – put at least one BUS pipe between them.

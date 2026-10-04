@@ -43,3 +43,5 @@ color = [0.2, 0.17, 0.03]   # natřená skříňka (tmavě žlutá)
 [render]
 frame_px = 128        # snímek 2×2 dlaždice, ve hře scale 0.5
 icon_px = 64
+thumbnail_px = 144   # thumbnail.png modu (seznam modů, mod portál)
+thumbnail_scale = 1.8  # záběr náhledu (ortho_scale kamery; větší = spojka menší)

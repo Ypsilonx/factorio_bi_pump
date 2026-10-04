@@ -51,7 +51,7 @@ local function balance(net)
     if left <= 1e-9 then break end
     left = left - rep.insert_fluid({ name = plan.fluid, amount = left, temperature = temperature })
   end
-  if left > 1e-6 then log("fluid-bus: při vyrovnání nešlo vrátit " .. left .. " " .. plan.fluid) end
+  if left > 1e-6 then log("fluid-bus: balancing could not return " .. left .. " " .. plan.fluid) end
 end
 
 --- Vyrovná sítě, které jsou na řadě (nejvýš SEGMENT_BUDGET segmentů za tick, aspoň jednu síť).

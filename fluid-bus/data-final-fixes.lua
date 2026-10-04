@@ -6,7 +6,7 @@ local coupler = require("prototypes.coupler")
 
 local pairs_, skipped = bus_pipes.collect(data.raw)
 for _, entry in ipairs(skipped) do
-  log("fluid-bus: vynecháno " .. entry.name .. " (" .. entry.reason .. ")")
+  log("fluid-bus: skipped " .. entry.name .. " (" .. entry.reason .. ")")
 end
 
 local marking = bus_pipes.marking_item(data.raw)
@@ -21,7 +21,7 @@ local names = {}
 local function create(type_name, source, source_item, count)
   local entity = bus_pipes.entity(data.raw[type_name][source], table.deepcopy, function(new)
     local missing = overlay.decorate(new, table.deepcopy)
-    if #missing > 0 then log("fluid-bus: bez označení " .. new.name .. ": " .. table.concat(missing, ", ")) end
+    if #missing > 0 then log("fluid-bus: no marking on " .. new.name .. ": " .. table.concat(missing, ", ")) end
   end)
   local item = bus_pipes.item(data.raw, source_item, entity, overlay.icons(data.raw.item[source_item], table.deepcopy))
   local recipe = bus_pipes.recipe(source_item, count, marking, item.name)
@@ -103,8 +103,8 @@ for _, pair in ipairs(pairs_) do
       table.insert(target.effects, { type = "unlock-recipe", recipe = recipe.name })
     end
     log("fluid-bus: " .. recipe.name .. " ← " .. serpent.line(recipe.ingredients)
-      .. " | výzkum: " .. (target and target.name or "od začátku")
-      .. (target and (" | prerekvizity: " .. table.concat(target.prerequisites or {}, ", ")) or ""))
+      .. " | technology: " .. (target and target.name or "from start")
+      .. (target and (" | prerequisites: " .. table.concat(target.prerequisites or {}, ", ")) or ""))
   end
 end
 
