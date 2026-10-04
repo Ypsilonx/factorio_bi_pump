@@ -24,14 +24,20 @@ return {
     A.eq(pipe.pictures.straight_horizontal.layers[1].filename, "h.png", "původní vrstva první")
     A.eq(#missing, 0, "nic nechybí")
   end },
-  { "okénko, roh, kříž a pozadí kapaliny zůstanou beze změny", function()
+  { "okénko, T a kříž dostanou B; roh, konec a pozadí kapaliny zůstanou beze změny", function()
     local pipe = { type = "pipe", pictures = {
-      straight_horizontal_window = { filename = "w.png" }, corner_up_right = { filename = "c.png" },
-      cross = { filename = "x.png" }, fluid_background = { filename = "f.png" } } }
+      straight_horizontal_window = { filename = "w.png" }, straight_vertical_window = { filename = "vw.png" },
+      t_up = { filename = "tu.png" }, t_left = { filename = "tl.png" }, cross = { filename = "x.png" },
+      corner_up_right = { filename = "c.png" }, ending_up = { filename = "e.png" },
+      fluid_background = { filename = "f.png" } } }
     overlay.decorate(pipe, av.copy)
-    A.eq(pipe.pictures.straight_horizontal_window.filename, "w.png", "okénko")
+    A.eq(top(pipe.pictures.straight_horizontal_window).filename, overlay.GRAPHICS .. "entity/b-horizontal.png", "okénko")
+    A.eq(top(pipe.pictures.straight_vertical_window).filename, overlay.GRAPHICS .. "entity/b-vertical.png", "svislé okénko")
+    A.eq(top(pipe.pictures.t_up).filename, overlay.GRAPHICS .. "entity/b-horizontal.png", "T nahoru")
+    A.eq(top(pipe.pictures.t_left).filename, overlay.GRAPHICS .. "entity/b-vertical.png", "T doleva")
+    A.eq(top(pipe.pictures.cross).filename, overlay.GRAPHICS .. "entity/b-horizontal.png", "kříž")
     A.eq(pipe.pictures.corner_up_right.filename, "c.png", "roh")
-    A.eq(pipe.pictures.cross.filename, "x.png", "kříž")
+    A.eq(pipe.pictures.ending_up.filename, "e.png", "konec")
     A.eq(pipe.pictures.fluid_background.filename, "f.png", "pozadí")
   end },
   { "sprite s layers dostane overlay navrch", function()

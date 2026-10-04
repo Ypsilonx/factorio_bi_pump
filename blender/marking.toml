@@ -40,6 +40,13 @@ vertical_rotation = 90
 # u vodorovné podzemní střed kolena).
 straight_horizontal = { shift = [0.0, -0.05], orientation = "horizontal" }
 straight_vertical = { shift = [0.0, -0.1], orientation = "vertical" }
+straight_horizontal_window = { shift = [0.0, -0.05], orientation = "horizontal" }
+straight_vertical_window = { shift = [0.0, -0.1], orientation = "vertical" }
+t_up = { shift = [0.0, -0.05], orientation = "horizontal" }
+t_down = { shift = [0.0, -0.05], orientation = "horizontal" }
+t_left = { shift = [0.0, -0.1], orientation = "vertical" }
+t_right = { shift = [0.0, -0.1], orientation = "vertical" }
+cross = { shift = [0.0, -0.05], orientation = "horizontal" }
 east = { shift = [0.1, 0.05], orientation = "horizontal" }
 west = { shift = [-0.1, 0.05], orientation = "horizontal" }
 north = { shift = [0.0, -0.35], orientation = "vertical" }

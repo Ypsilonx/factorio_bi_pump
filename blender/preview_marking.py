@@ -17,13 +17,15 @@ UNDERGROUND = {"north": "up", "south": "down", "east": "right", "west": "left"}
 #: Ukázková síť: (sloupec, řádek, tvar). Řádek 0 nahoře.
 LAYOUT = [
     (0, 0, "ending_right"), (1, 0, "straight_horizontal"), (2, 0, "straight_horizontal_window"),
-    (3, 0, "straight_horizontal"), (4, 0, "straight_horizontal"), (5, 0, "corner_down_left"),
-    (5, 1, "straight_vertical"), (5, 2, "straight_vertical_window"), (5, 3, "straight_vertical"),
-    (5, 4, "ending_up"),
+    (3, 0, "t_down"), (4, 0, "straight_horizontal"), (5, 0, "corner_down_left"),
+    (3, 1, "cross"), (2, 1, "ending_right"), (4, 1, "ending_left"), (5, 1, "straight_vertical"),
+    (3, 2, "t_left"), (2, 2, "ending_right"), (5, 2, "straight_vertical_window"),
+    (3, 3, "t_right"), (4, 3, "straight_horizontal"), (5, 3, "t_up"), (6, 3, "ending_left"),
+    (3, 4, "ending_up"),
     (0, 6, "east"), (1, 6, "straight_horizontal"), (2, 6, "west"),
     (3, 5, "south"), (3, 6, "straight_vertical"), (3, 7, "north"),
 ]
-COLUMNS, ROWS = 6, 8
+COLUMNS, ROWS = 7, 8
 
 
 def image_material(path):
