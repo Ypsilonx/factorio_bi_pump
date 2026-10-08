@@ -45,10 +45,25 @@ return {
     A.eq(plan.fluid, nil, "bez kapaliny")
     near(sum(plan.deltas), 0, "nic")
   end },
-  { "odchylka pod tolerancí se nepřelévá a součet zůstane nula", function()
+  { "odchylka nad tolerancí srovná celou síť přesně, součet zůstane nula", function()
     local plan = m.plan_network({ { fluid = "water", amount = 501, capacity = 1000 },
       { amount = 499, capacity = 1000 }, { amount = 200, capacity = 1000 } })
     near(sum(plan.deltas), 0, "součet nula")
-    A.truthy(plan.deltas[3] > 0, "nejprázdnější dostane")
+    near(499 + plan.deltas[2], 400, "i malá odchylka se srovná")
+    near(200 + plan.deltas[3], 400, "nejprázdnější na cíl")
+  end },
+  { "celá síť pod tolerancí se nepřelévá", function()
+    local plan = m.plan_network({ { fluid = "water", amount = 501, capacity = 1000 },
+      { amount = 499, capacity = 1000 } })
+    near(plan.deltas[1], 0, "nic")
+    near(plan.deltas[2], 0, "nic")
+  end },
+  { "plný zdroj a 9 segmentů na 96 %: síť neuvízne pod plným (dřívější chyba tolerance)", function()
+    local segments = { { fluid = "water", amount = 1000, capacity = 1000 } }
+    for i = 2, 10 do segments[i] = { amount = 960, capacity = 1000 } end
+    local plan = m.plan_network(segments)
+    A.truthy(plan.deltas[1] < 0, "ze zdroje se odebírá")
+    near(960 + plan.deltas[10], plan.fraction * 1000, "vzdálený segment na cíl")
+    near(sum(plan.deltas), 0, "součet nula")
   end },
 }

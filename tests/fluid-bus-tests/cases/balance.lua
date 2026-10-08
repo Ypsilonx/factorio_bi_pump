@@ -22,7 +22,38 @@ local function two_segments(ctx, powered)
   if powered then H.power(ctx, 0, 0) end
 end
 
+--- Kroky testu: opakovaně dolévat zdroj (simuluje pumpu bez odběru), poslední krok zkontroluje.
+local function refill_steps(count, check)
+  local steps = {}
+  for i = 1, count do
+    steps[i] = { ticks = 10, run = function(ctx) ctx.pipes[1].insert_fluid({ name = "water", amount = 1000 }) end }
+  end
+  steps[count + 1] = { ticks = 120, run = check }
+  return steps
+end
+
 return {
+  {
+    name = "plný zdroj bez odběru: i vzdálený segment se naplní (dřívější uvíznutí na tolerancí)",
+    setup = function(ctx)
+      ctx.pipes = {}
+      for i = 0, 7 do
+        local y = i * 3 - 12
+        ctx.pipes[i + 1] = column(ctx, 0, y, y + 1)[1]
+        if i < 7 then
+          H.place(ctx, "fb-bus-coupler", 0, y + 2)
+          H.place(ctx, "small-electric-pole", 1, y + 2)
+        end
+      end
+      H.power(ctx, 0, 12)
+    end,
+    steps = refill_steps(80, function(ctx)
+      local last = ctx.pipes[#ctx.pipes]
+      local _, amount = contents(last)
+      local fill = amount / last.fluidbox.get_capacity(1)
+      H.truthy(fill > 0.99, "vzdálený segment " .. string.format("%.3f", fill))
+    end),
+  },
   {
     name = "dva segmenty se vyrovnají a množství se zachová",
     setup = function(ctx)
