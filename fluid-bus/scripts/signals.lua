@@ -1,102 +1,95 @@
---- Signály a stav spojek do obvodové sítě a GUI:
----   červený drát – [kapalina] = množství kapaliny v síti,
----   zelený drát  – [kapalina] = naplnění sítě v % (0–100),
----                  [vstup] / [výstup] = naplnění na vstupní / výstupní straně spojky v % (i když je vypnutá),
----   custom_status – síť a naplnění / bez proudu / vypnuto obvodem / nepřipojeno / různé kapaliny.
+--- Signál a stav spojek do obvodové sítě a GUI:
+---   zelený drát – [kapalina] = naplnění v % (0–100): síť, ve které spojka je; vypnutá / nenapájená spojka
+---                 posílá naplnění plnější ze svých stran (podmínka „[kapalina] > 50“ ji tak umí znovu zapnout),
+---   custom_status a coupler.state – síť a naplnění / bez proudu / vypnuto obvodem / nepřipojeno / různé kapaliny.
 --- Aktualizuje se po jedné spojce, rozloženě po ticích (volá kontrola v control.lua), a do hry se zapisuje
 --- jen při změně – zápis do tisíce spojek najednou by způsobil viditelnou špičku ticku.
 local registry = require("scripts.registry")
 local topology = require("scripts.topology")
-
-local DATA = prototypes.mod_data["fb-data"].data
-local INPUT = { type = "virtual", name = DATA.input_signal, quality = "normal" }
-local OUTPUT = { type = "virtual", name = DATA.output_signal, quality = "normal" }
 
 local M = {}
 
 local GREEN = defines.entity_status_diode.green
 local YELLOW = defines.entity_status_diode.yellow
 local RED = defines.entity_status_diode.red
---- Strop hodnoty signálu (int32).
-local MAX_SIGNAL = 2147483647
 
---- Nastaví sloty kombinátoru podle seznamu; slot s value nil se smaže.
---- @param combinator LuaEntity skrytý konstantní kombinátor
---- @param slots table[] { signal = SignalID|nil, value = integer|nil } v pořadí slotů
-local function set(combinator, slots)
-  local behavior = combinator.get_or_create_control_behavior()
-  if behavior.sections_count == 0 then behavior.add_section() end
-  local section = behavior.get_section(1)
-  for i, slot in ipairs(slots) do
-    if slot.signal and slot.value then
-      section.set_slot(i, { value = slot.signal, min = slot.value })
-    else
-      section.clear_slot(i)
-    end
-  end
-end
+--- Barva kontrolky a stavu podle coupler.state (sdílí i okno spojky).
+M.DIODES = { ok = GREEN, ["no-power"] = RED, disabled = YELLOW, ["not-connected"] = YELLOW, conflict = RED }
 
---- Procenta z podílu (zaokrouhlená), nil zůstane nil.
---- @param fraction number|nil
---- @return integer|nil
-local function percent(fraction)
-  return fraction and math.floor(fraction * 100 + 0.5) or nil
-end
-
---- Zapíše signály spojky, jen pokud se změnily (fluid nil = signály sítě smazat).
+--- Zapíše signál spojky, jen pokud se změnil (fluid nil = signál smazat).
 --- @param coupler table záznam ze storage.couplers
---- @param fluid string|nil kapalina sítě
---- @param amount integer|nil množství kapaliny v síti
---- @param fill integer|nil naplnění sítě v %
---- @param input integer|nil naplnění vstupní strany v %
---- @param output integer|nil naplnění výstupní strany v %
-local function write(coupler, fluid, amount, fill, input, output)
-  local key = table.concat({ tostring(fluid), tostring(amount), tostring(fill), tostring(input), tostring(output) }, "|")
+--- @param fluid string|nil kapalina
+--- @param percent integer|nil naplnění v %
+local function write(coupler, fluid, percent)
+  local key = tostring(fluid) .. "|" .. tostring(percent)
   if coupler.signal_key == key then return end
   registry.ensure_signals(coupler)
   coupler.signal_key = key
-  local signal = fluid and { type = "fluid", name = fluid, quality = "normal" }
-  set(coupler.signals.red, { { signal = signal, value = amount } })
-  set(coupler.signals.green, { { signal = signal, value = fill }, { signal = INPUT, value = input },
-    { signal = OUTPUT, value = output } })
+  local behavior = coupler.signals.green.get_or_create_control_behavior()
+  if behavior.sections_count == 0 then behavior.add_section() end
+  local section = behavior.get_section(1)
+  if fluid and percent then
+    section.set_slot(1, { value = { type = "fluid", name = fluid, quality = "normal" }, min = percent })
+  else
+    section.clear_slot(1)
+  end
 end
 
---- Nastaví custom_status spojky, jen pokud se změnil.
+--- Nastaví stav spojky (coupler.state a custom_status), jen pokud se změnil.
 --- @param coupler table
---- @param diode defines.entity_status_diode
---- @param label LocalisedString
-local function status(coupler, diode, label)
-  local key = table.concat({ label[1], label[2] or "", label[3] or "" }, "|")
+--- @param state string klíč stavu (fb-status.<state>)
+--- @param ... any parametry popisku
+local function status(coupler, state, ...)
+  local label = { "fb-status." .. state, ... }
+  local key = table.concat({ state, tostring(label[2] or ""), tostring(label[3] or "") }, "|")
+  coupler.state = state
   if coupler.status_key == key then return end
   coupler.status_key = key
-  coupler.entity.custom_status = { diode = diode, label = label }
+  coupler.entity.custom_status = { diode = M.DIODES[state], label = label }
 end
 
---- Aktualizuje signály a stav jedné spojky podle sítě, ve které je, a podle jejích stran.
+--- Procenta z podílu (zaokrouhlená).
+--- @param fraction number
+--- @return integer
+local function percent(fraction)
+  return math.floor(fraction * 100 + 0.5)
+end
+
+--- Naplnění plnější strany spojky, která není v síti (nil = žádná strana nemá kapalinu).
+--- @param coupler table
+--- @return number|nil podíl, string|nil kapalina
+function M.fuller_side(coupler)
+  local best, best_fluid
+  for _, side in ipairs(coupler.sides) do
+    local fraction, fluid = topology.side_fill(side)
+    if fluid and fraction and (not best or fraction > best) then best, best_fluid = fraction, fluid end
+  end
+  return best, best_fluid
+end
+
+--- Aktualizuje signál a stav jedné spojky podle sítě, ve které je, nebo podle jejích stran.
 --- @param unit integer
 --- @param coupler table záznam ze storage.couplers
 function M.update_coupler(unit, coupler)
   if not coupler.entity.valid then return end
-  local input = percent(topology.side_fill(coupler.sides[1]))
-  local output = percent(topology.side_fill(coupler.sides[2]))
   local net = topology.network_of(unit)
   if not net then
-    write(coupler, nil, nil, nil, input, output)
+    local fraction, fluid = M.fuller_side(coupler)
+    write(coupler, fluid, fraction and percent(fraction))
     if not coupler.powered then
-      status(coupler, RED, { "fb-status.no-power" })
+      status(coupler, "no-power")
     elseif coupler.enabled == false then
-      status(coupler, YELLOW, { "fb-status.disabled" })
+      status(coupler, "disabled")
     else
-      status(coupler, YELLOW, { "fb-status.not-connected" })
+      status(coupler, "not-connected")
     end
   elseif net.conflict then
-    write(coupler, nil, nil, nil, input, output)
-    status(coupler, RED, { "fb-status.conflict" })
+    write(coupler, nil, nil)
+    status(coupler, "conflict")
   else
     local fill = percent(net.fraction)
-    local amount = net.fluid and math.min(MAX_SIGNAL, math.floor(net.total_amount)) or nil
-    write(coupler, net.fluid, amount, net.fluid and fill or nil, input, output)
-    status(coupler, GREEN, { "fb-status.ok", #net.segments, fill })
+    write(coupler, net.fluid, net.fluid and fill or nil)
+    status(coupler, "ok", #net.segments, fill)
   end
 end
 

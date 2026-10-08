@@ -41,7 +41,6 @@ local function check_couplers()
     if not (coupler and coupler.entity.valid) or topology.refresh(coupler) then
       storage.dirty = true
     else
-      registry.ensure_arrow(coupler)
       topology.read_interval(unit, coupler)
       signals.update_coupler(unit, coupler)
     end
@@ -88,7 +87,6 @@ script.on_event(defines.events.on_player_rotated_entity, function(event)
   local coupler = event.entity.name == registry.COUPLER and storage.couplers[event.entity.unit_number]
   if coupler then
     topology.refresh(coupler)
-    registry.ensure_arrow(coupler)
     storage.dirty = true
   end
 end)

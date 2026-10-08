@@ -8,12 +8,13 @@ local function column(ctx, x, y1, y2)
   return list
 end
 
-local INPUT = { type = "virtual", name = "fb-input-fill", quality = "normal" }
-local OUTPUT = { type = "virtual", name = "fb-output-fill", quality = "normal" }
+local WATER = { type = "fluid", name = "water", quality = "normal" }
+local RED_WIRE = defines.wire_connector_id.circuit_red
+local GREEN_WIRE = defines.wire_connector_id.circuit_green
 
 return {
   {
-    name = "červený drát = množství, zelený drát = procenta, obojí pod ikonou kapaliny; stav ok",
+    name = "jediný signál: zelený drát [kapalina] = naplnění v %, červený prázdný; stav ok",
     setup = function(ctx)
       local top = column(ctx, 0, -6, -1)[1]
       ctx.c = H.place(ctx, "fb-bus-coupler", 0, 0)
@@ -22,38 +23,35 @@ return {
       top.insert_fluid({ name = "water", amount = 600 })
     end,
     steps = { { ticks = 400, run = function(ctx)
-      local water = { type = "fluid", name = "water" }
-      local amount = ctx.c.get_signal(water, defines.wire_connector_id.circuit_red)
-      local percent = ctx.c.get_signal(water, defines.wire_connector_id.circuit_green)
-      H.truthy(amount >= 590 and amount <= 600, "červený = množství (" .. amount .. ")")
+      local percent = ctx.c.get_signal(WATER, GREEN_WIRE)
       H.truthy(percent >= 45 and percent <= 55, "zelený = procenta (" .. percent .. ")")
+      H.eq(ctx.c.get_signal(WATER, RED_WIRE), 0, "červený prázdný")
       H.eq(ctx.c.custom_status.label[1], "fb-status.ok", "stav")
     end } },
   },
   {
-    name = "vypnutá spojka posílá naplnění vstupu a výstupu; vlastní podmínka vstup > 50 ji zapne bez drátů",
+    name = "vypnutá spojka posílá naplnění plnější strany; vlastní podmínka [voda] > 50 ji zapne bez drátů",
     setup = function(ctx)
-      -- Vstup spojky otočené na sever je nahoře.
       ctx.top = column(ctx, 0, -6, -1)[1]
       ctx.c = H.place(ctx, "fb-bus-coupler", 0, 0)
       ctx.bottom = column(ctx, 0, 1, 6)[1]
       H.power(ctx, 0, 0)
       local behavior = ctx.c.get_or_create_control_behavior()
       behavior.circuit_enable_disable = true
-      behavior.circuit_condition = { comparator = ">", first_signal = INPUT, constant = 50 }
-      ctx.top.insert_fluid({ name = "water", amount = 300 })
+      behavior.circuit_condition = { comparator = ">", first_signal = WATER, constant = 50 }
+      -- Kapalina na výstupní straně: na směru spojky nezáleží.
+      ctx.bottom.insert_fluid({ name = "water", amount = 300 })
     end,
     steps = {
       { ticks = 300, run = function(ctx)
-        local input = ctx.c.get_signal(INPUT, defines.wire_connector_id.circuit_green)
-        H.truthy(input >= 45 and input <= 55, "vstup ≈ 50 % (" .. input .. ")")
-        H.eq(ctx.c.get_signal(OUTPUT, defines.wire_connector_id.circuit_green), 0, "výstup prázdný")
-        H.eq(ctx.bottom.fluidbox.get_fluid_segment_contents(1).water, nil, "pod 50 % nepouští")
+        local fill = ctx.c.get_signal(WATER, GREEN_WIRE)
+        H.truthy(fill >= 45 and fill <= 55, "plnější strana ≈ 50 % (" .. fill .. ")")
+        H.eq(ctx.top.fluidbox.get_fluid_segment_contents(1).water, nil, "pod 50 % nepouští")
         H.eq(ctx.c.custom_status.label[1], "fb-status.disabled", "stav")
-        ctx.top.insert_fluid({ name = "water", amount = 300 })
+        ctx.bottom.insert_fluid({ name = "water", amount = 300 })
       end },
       { ticks = 300, run = function(ctx)
-        local water = ctx.bottom.fluidbox.get_fluid_segment_contents(1).water or 0
+        local water = ctx.top.fluidbox.get_fluid_segment_contents(1).water or 0
         H.truthy(water > 0, "nad 50 % pouští dál (" .. water .. ")")
       end },
     },

@@ -28,11 +28,11 @@ return {
     end,
     steps = { { ticks = 5, run = function(ctx)
       local hidden = ctx.surface.find_entities_filtered({ name = "fb-bus-coupler-signals", position = ctx.c.position })
-      H.eq(#hidden, 2, "dva kombinátory")
+      H.eq(#hidden, 1, "jeden kombinátor")
       hidden[1].destroy()
       remote.call("fb", "revalidate")
-      H.eq(#ctx.surface.find_entities_filtered({ name = "fb-bus-coupler-signals", position = ctx.c.position }), 2,
-        "obnoveny oba")
+      H.eq(#ctx.surface.find_entities_filtered({ name = "fb-bus-coupler-signals", position = ctx.c.position }), 1,
+        "obnoven")
     end } },
   },
 }

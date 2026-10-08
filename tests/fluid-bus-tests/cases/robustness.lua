@@ -103,7 +103,7 @@ return {
       local clone = ctx.surface.find_entities_filtered({ name = "fb-bus-coupler",
         position = { ctx.c.position.x + 4, ctx.c.position.y } })[1]
       H.truthy(clone, "klon spojky")
-      H.eq(hidden_count(ctx, clone), 2, "dva kombinátory (červený a zelený) u klonu")
+      H.eq(hidden_count(ctx, clone), 1, "jeden kombinátor u klonu")
     end } },
   },
   {
@@ -111,7 +111,7 @@ return {
     setup = function(ctx) ctx.c = H.place(ctx, "fb-bus-coupler", 0, 0) end,
     steps = { { ticks = 2, run = function(ctx)
       script.raise_script_built({ entity = ctx.c })
-      H.eq(hidden_count(ctx, ctx.c), 2, "dva kombinátory (červený a zelený)")
+      H.eq(hidden_count(ctx, ctx.c), 1, "jeden kombinátor")
     end } },
   },
   {
