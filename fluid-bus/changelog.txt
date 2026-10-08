@@ -1,4 +1,23 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.0
+Date: 2026-10-08
+  Changes:
+    - BUS pipes now connect only to BUS pipes, bus couplers and pumps (not to ordinary pipes, tanks or
+      machines). A pump is the gateway between the bus and ordinary pipes. BUS undergrounds no longer pair
+      with ordinary undergrounds. Pipes with their own connection category (e.g. Pyanodon's niobium pipes)
+      keep their BUS variants separate in the same way.
+    - Existing saves: BUS pipes touching ordinary pipes, tanks or machines get disconnected after the
+      update – put a pump between the bus and the ordinary pipe.
+  Features:
+    - Coupler sends the fill % of the network on its input and output side (green wire, new signals
+      "Bus coupler input fill" and "output fill"), even while disabled. Example: coupler condition
+      "input fill > 50" passes fluid on only when the bus in front of it is more than half full.
+    - Arrow in alt mode shows the coupler direction (input -> output).
+  Bugfixes:
+    - Fixed a bus network getting stuck below full: with no consumption, segments far from the source
+      stayed several % lower (about 0.5 % per segment in the network). The tolerance is now evaluated
+      for the whole network.
+---------------------------------------------------------------------------------------------------
 Version: 0.1.0
 Date: 2026-10-04
   Features:

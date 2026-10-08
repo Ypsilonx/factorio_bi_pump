@@ -13,10 +13,15 @@ no matter how long the bus is or where the inputs and outputs are.
 - **BUS variants of every pipe in the game** – vanilla and modded (Pyanodon, Bob's, …), with the same
   properties as the original. Recognize them by a spray-painted black **"B"**.
 - **Bus coupler** (1×1, electric) – place it in the bus instead of a pump. It connects **only to BUS
-  pipes**, so the "one tank" bus needs dedicated infrastructure.
+  pipes**, so the "one tank" bus needs dedicated infrastructure. BUS pipes connect only to BUS pipes,
+  couplers and **pumps** – a pump is the gateway between the bus and ordinary pipes.
 - **Exact conservation** – fluid amount and temperature (steam) are preserved.
-- **Circuit network** – both values under the icon of the fluid in the bus: **red wire = amount**,
+- **Circuit network** – network values under the icon of the fluid in the bus: **red wire = amount**,
   **green wire = fill %**. Burn the surplus only above 90 %, start a backup source below 30 %.
+  The green wire also carries the fill % on the coupler **input [I] and output [O]** side – even
+  while the coupler is disabled. The input side is shown by an arrow in alt mode.
+- **Priority / overflow** – coupler condition "[I] input fill > 50": the bus behind the coupler gets
+  fluid only when the bus in front of it is more than half full. Works without wires.
 - **Circuit control** – disable a coupler by a condition (like a pump); the *Bus balancing interval*
   signal sets how often its network is balanced.
 - **Status in the coupler window** – network size and fill, no power, not connected, mixed fluids.
@@ -29,7 +34,8 @@ no matter how long the bus is or where the inputs and outputs are.
 2. Build the bus from BUS pipes – or upgrade your existing bus: build BUS pipes over the old ones
    (fluid is kept) or use the upgrade planner.
 3. Replace the bus pumps with **bus couplers** and power them.
-4. Connect inputs and outputs with ordinary pipes and a **pump right next to the bus**.
+4. Connect inputs and outputs through a **pump attached directly to a BUS pipe** (ordinary pipes and
+   tanks do not connect to BUS pipes).
 
 ```
  before:  source ─══════[P]══════[P]══════[P]══════─   (flows one way only, max 1200/s)
@@ -54,16 +60,23 @@ Factorio 2.0.77, balancing interval 5 ticks, script time after warm-up:
 
 | Bus | average | worst tick |
 |---|---|---|
-| 110 couplers (one network) | 0.08 ms | 0.43 ms |
-| 1000 couplers (one network, extreme) | ~0.6 ms | ~3.2 ms once per interval |
+| 110 couplers (one network) | 0.15 ms | 0.77 ms |
+| 1000 couplers (one network, extreme) | ~1.1 ms | ~5.6 ms once per interval |
+| 1000 couplers (19 networks of 52 segments) | 0.77 ms | 2.6 ms |
+
+## Upgrading from 0.1
+Since 0.2.0 BUS pipes no longer connect to ordinary pipes, tanks or machines. In an existing save such
+connections are cut after the update – put a **pump** between the bus and the ordinary pipe.
 
 ## Compatibility
 Tested (headless integration tests) with: vanilla, Space Age, Pyanodon's modpack, Bob's Logistics,
 Pipe Tiers. BUS variants are generated from all pipes in the game, so other pipe mods should work too.
 
 ## Known limitations
-- A coupler's enable condition also sees the coupler's own output signals (amount + fill % under
-  the fluid icon). Base the condition on a different signal.
+- With a condition like "[I] > 50" the coupler pulses: after joining, the input may drop below 50 %
+  and the coupler switches off again. Condition changes are picked up within 1 second.
+- A coupler's enable condition also sees the coupler's own output signals. Use [I] / [O] for it, not
+  the bus fluid icon (amount and fill % add up in the condition).
 - Steam of different temperatures in one network is mixed (weighted average) – keep 165 °C and
   500 °C steam on separate buses.
 - Two couplers directly next to each other do not connect – put at least one BUS pipe between them.

@@ -9,21 +9,27 @@ Data stage:
 - `fluid-bus/settings.lua` – startup nastavení (odběr spojky, interval vyrovnávání).
 - `fluid-bus/data.lua` – spojka busu (`prototypes/coupler.lua`).
 - `fluid-bus/data-final-fixes.lua` – BUS trubky ze všech trubek ve hře, recept spojky, výzkumy, `mod-data` `fb-data`.
+  Kategorie napojení: BUS varianta má místo původních kategorií `fb-bus` (za `default`) a `fb-bus-<X>`
+  (za vlastní kategorii X, např. Py `niobium-pipe`) – na běžné trubky se nenapojí, tiery zůstanou
+  oddělené. Spojka dostane všechny kategorie busu, pumpy (i z modů) navíc k původním.
 - `fluid-bus/prototypes/availability.lua` – dostupnost předmětů (recepty, výzkumy, skryté prototypy).
 - `fluid-bus/prototypes/bus_pipes.lua` – výběr trubek, párování s podzemními, BUS prototypy.
 - `fluid-bus/prototypes/bus_overlay.lua` – nastříkané „B“ na spritech trubek a „B“ v ikonách.
 - `fluid-bus/prototypes/bus_marking_data.lua` – umístění „B“, **generované** z `blender/marking.toml`.
 - `fluid-bus/prototypes/research.lua` – výzkumy s dopočítanými prerekvizitami.
-- `fluid-bus/prototypes/coupler.lua` – spojka (assembling-machine 1×1 bez receptu, 2 fluidboxy `fb-bus`,
-  `drain`), skrytý kombinátor signálů (dva na spojku: červený a zelený drát).
+- `fluid-bus/prototypes/coupler.lua` – spojka (assembling-machine 1×1 bez receptu, 2 fluidboxy s kategoriemi busu,
+  `drain`), virtuální signály `fb-balance-interval`, `fb-input-fill`, `fb-output-fill`, skrytý kombinátor signálů (dva na spojku: červený a zelený drát).
 
 Runtime (`control.lua` jen napojuje události):
-- `scripts/registry.lua` – evidence spojek ve `storage`, skryté kombinátory (drát s původem `script`).
+- `scripts/registry.lua` – evidence spojek ve `storage`, skryté kombinátory (drát s původem `script`),
+  šipka směru v alt režimu (`rendering`, dorovnává ji i rozložená kontrola – rotace skriptem událost nevyvolá).
 - `scripts/topology.lua` – segmenty na stranách spojek, zástupné BUS trubky, přestavba sítí (bez čtení hry).
 - `scripts/network.lua` – čistá logika: segmenty + aktivní spojky → sítě (union-find).
 - `scripts/balance_math.lua` – čistá logika: plán vyrovnání celé sítě (společné naplnění, přelití, konflikt).
 - `scripts/balancer.lua` – každou síť jednou za `fb-balance-interval` ticků srovná celou v jednom ticku.
-- `scripts/signals.lua` – signály (červený drát: [kapalina] = množství, zelený: [kapalina] = %), `custom_status` spojky.
+- `scripts/signals.lua` – signály (červený drát: [kapalina] = množství, zelený: [kapalina] = %, `fb-input-fill` /
+  `fb-output-fill` = naplnění sítě na vstupní / výstupní straně, i u vypnuté spojky – `topology.side_fill`
+  přes `storage.segment_net`, jinak přímé čtení segmentu), `custom_status` spojky.
 - Řízení obvodem: vypnutí podmínkou (`topology.refresh` čte `control_behavior.disabled` → neaktivní hrana),
   signál `fb-balance-interval` (`topology.read_interval`, síť bere nejmenší hodnotu ze svých spojek).
 - `scripts/remote.lua` – rozhraní `fb` (`network_of` vč. platného `interval`, `set_interval`, `rebuild`, `revalidate`, `stats`).
@@ -52,7 +58,8 @@ Grafika:
 | Jak často se vyrovná celá síť (ticky) | nastavení **mapy** `fb-balance-interval` (výchozí 5, mění se za běhu) |
 | Nejvýš segmentů vyrovnaných v jednom ticku (více sítí) | `fluid-bus/scripts/balancer.lua` – `SEGMENT_BUDGET` |
 | Jak často se kontroluje napojení, proud a signály spojek | `fluid-bus/control.lua` – `CHECK_INTERVAL` |
-| Odchylka, pod kterou se nepřelévá | `fluid-bus/scripts/balance_math.lua` – `TOLERANCE` |
+| Odchylka, pod kterou se síť nepřelévá (posuzuje se za celou síť) | `fluid-bus/scripts/balance_math.lua` – `TOLERANCE` |
+| Nejmenší přelití (litry) | `fluid-bus/scripts/balance_math.lua` – `MIN_DELTA` |
 | Zpoždění přestavby sítí po změně (slučování změn) | `fluid-bus/control.lua` – `REBUILD_DELAY` |
 | Suroviny receptu spojky | `fluid-bus/prototypes/coupler.lua` – `INGREDIENTS` |
 | Objem fluidboxu spojky | `fluid-bus/prototypes/coupler.lua` – `FLUID_VOLUME` |
@@ -92,14 +99,19 @@ prochází všechny recepty podzemní, ne jen ten nejdřív dostupný.
 Mody, které v `data-final-fixes` mění trubky (Pipe Tiers), musí běžet před námi – patří do
 volitelných závislostí v `fluid-bus/info.json` a do `tests/fluid-bus-tests/info.json` (kontrola extentu).
 
-## Výkon (2026-10-04, Factorio 2.0.77, `tools/run-perf.sh <počet> 1800`, interval vyrovnávání 5 ticků)
-Bus z úseků po 29 trubkách, voda z infinity pipe na začátku, odběr na konci, napájení velkými sloupy.
+## Výkon (2026-10-08, Factorio 2.0.77, `tools/run-perf.sh <počet> 1800`, interval vyrovnávání 5 ticků)
+Bus z úseků po 29 trubkách, voda z infinity pipe na začátku, odběr na konci (u busu přes pumpu – BUS
+trubka se na infinity pipe nenapojí), napájení velkými sloupy.
 Stejný bus s vanilla pumpami jako srovnání. Čísla „skript“ = sloupec `scriptUpdate` po ustálení (tick ≥ 600).
 
 | Bus | spojky: průměr / nejhorší tick | pumpy: průměr / nejhorší tick | skript (ustálený běh) |
 |---|---|---|---|
-| 110 úseků (≈ tvůj bus) | 0,235 / 1,0 ms | 0,141 / 0,45 ms | průměr 0,077 ms, max 0,43 ms |
-| 1000 úseků (extrém) | 0,811 / 5,1 ms | 0,198 / 0,45 ms | vyrovnání celé sítě ~3,2 ms každých 5 ticků |
+| 110 úseků (≈ tvůj bus) | 0,323 / 1,4 ms | 0,152 / 0,53 ms | průměr 0,152 ms, max 0,77 ms |
+| 1000 úseků (extrém) | 1,341 / 8,7 ms | 0,208 / 0,52 ms | průměr 1,09 ms, max 5,6 ms (vyrovnání celé sítě) |
+| 1000 úseků, sítě po 52 segmentech (`run-perf.sh 1000 1800 5 52`) | 0,973 / 3,5 ms | 0,207 / 1,3 ms | průměr 0,77 ms, max 2,6 ms |
+
+Měření z 0.1.0 (110 úseků: skript 0,077 ms) bylo podhodnocené: chyba tolerance (opravena v 0.2.0)
+zapisovala jen málo segmentů, síť ale zároveň uvízla pod plným. Teď se při plnění zapisují všechny.
 
 - Cena je úměrná **počtu segmentů v síti / interval**: vyrovnání sítě čte a zapisuje všechny segmenty
   v jednom ticku (~3 µs na segment). U obřích sítí zvětši `fb-balance-interval` (nastavení mapy).
@@ -115,8 +127,10 @@ Stejný bus s vanilla pumpami jako srovnání. Čísla „skript“ = sloupec `s
 
 ## Známá omezení enginu
 - Podzemní spoj (`connection_type = "underground"`) smí mít jen jednu `connection_category` – BUS
-  podzemní trubka ho má beze změny, `fb-bus` dostávají jen nadzemní konektory.
+  podzemní dostane jen první převedenou kategorii (`fb-bus`), takže se nespáruje s běžnou podzemní.
 - Fluidbox stroje bez receptu se s potrubím nevyměňuje – spojka proto přelévá přes sousední BUS trubku.
+- `flow_direction` jiný než `input-output` na fluidboxu spojky ji od trubek odpojí (ověřeno testy) – směr
+  proto ukazuje skriptem kreslená šipka, ne šipky fluidboxu.
 - `max_pipeline_extent` není za běhu čitelný – kontrola extentu běží přes `mod-data` testovacího modu.
 
 ## Ruční kontrola ve hře (před vydáním)
@@ -128,11 +142,14 @@ Spustit `bash tools/link-mod.sh` a hru s modem, v editoru mapy (`/editor`) nebo 
 2. BUS trubka postavená přes běžnou (rychlá výměna) i **upgrade planner** z běžné trubky na BUS
    (v plánovači nastavit trubka → BUS: trubka) – zda je mapování dovolené a kapalina zůstane.
 3. Ikony předmětů a výzkumů, názvy „BUS: Trubka“ a „Spojka busu“ v češtině i angličtině, popisky.
-4. Spojka: na běžnou trubku se nenapojí (konektory se nespojí), na BUS ano; rotace R; stav v okně
+4. BUS trubka se nenapojí na běžnou trubku ani nádrž, na pumpu ano (pumpa i z modů); BUS podzemní se
+   nespáruje s běžnou. Spojka: na běžnou trubku se nenapojí, na BUS ano; rotace R; šipka v alt režimu
+   míří od vstupu k výstupu (ověřit, že nemíří obráceně, i po rotaci); stav v okně
    spojky („Bus: N segmentů, X %“, „Bez proudu“, „Nepřipojeno k BUS trubce“, „Různé kapaliny“).
 5. Obvodová síť: červený drát ze spojky do lampy/kombinátoru ukáže [kapalina] = množství, zelený = %.
    Podmínka zapnutí v okně spojky ji vypne (stav „Vypnuto obvodovou sítí“, žlutá kontrolka); signál
-   „Interval vyrovnávání busu“ jde vybrat a poslat konstantním kombinátorem.
+   „Interval vyrovnávání busu“ jde vybrat a poslat konstantním kombinátorem. Signály [I]/[O] (naplnění
+   vstupu/výstupu) na zeleném drátě; podmínka spojky „[I] > 50“ bez drátů – spojka pouští dál až nad 50 %.
 6. Blueprint a kopírování spojky (skrytý kombinátor se nesmí objevit v blueprintu), zbourání spojky
    (kapalina zůstane v trubkách).
 7. Vzhled spojky: sedí v řadě trubek (vodorovně i svisle), stín, kontrolka zelená s proudem, červená bez
