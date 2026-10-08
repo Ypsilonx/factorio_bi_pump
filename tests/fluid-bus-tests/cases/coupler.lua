@@ -47,4 +47,25 @@ return {
       H.eq(ctx.off.energy, 0, "nenapájená")
     end } },
   },
+  {
+    name = "šipka směru v alt režimu míří k výstupu a otočí se s rotací",
+    setup = function(ctx)
+      ctx.c = H.place(ctx, "fb-bus-coupler", 0, 0)
+    end,
+    steps = {
+      { ticks = 2, run = function(ctx)
+        ctx.arrow = nil
+        for _, object in pairs(rendering.get_all_objects("fluid-bus")) do
+          if object.target.entity == ctx.c then ctx.arrow = object end
+        end
+        H.truthy(ctx.arrow, "šipka existuje")
+        H.eq(ctx.arrow.only_in_alt_mode, true, "jen v alt režimu")
+        H.eq(ctx.arrow.orientation, 0.5, "sever → šipka na jih")
+        ctx.c.rotate()
+      end },
+      { ticks = 70, run = function(ctx)
+        H.eq(ctx.arrow.orientation, 0.75, "východ → šipka na západ")
+      end },
+    },
+  },
 }

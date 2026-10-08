@@ -94,7 +94,7 @@ function M.rebuild(tick, interval)
     edges[#edges + 1] = { id = unit, a = coupler.sides[1].seg, b = coupler.sides[2].seg,
       active = coupler.powered and coupler.enabled ~= false }
   end
-  storage.networks, storage.coupler_net = {}, {}
+  storage.networks, storage.coupler_net, storage.segment_net = {}, {}, {}
   for index, built in ipairs(network.build(edges)) do
     local net = { segments = built.segments, couplers = built.couplers, reps = {}, conflict = false,
       fraction = 0, total_amount = 0, total_capacity = 0, next_due = tick + (index - 1) % interval }
@@ -104,6 +104,7 @@ function M.rebuild(tick, interval)
         if side.seg and not net.reps[side.seg] then net.reps[side.seg] = side.rep end
       end
     end
+    for _, segment in ipairs(built.segments) do storage.segment_net[segment] = index end
     net.interval = network_interval(net)
     storage.networks[index] = net
   end
@@ -111,6 +112,20 @@ function M.rebuild(tick, interval)
   storage.check_cursor = math.min(storage.check_cursor, math.max(#check, 1))
   storage.cursor = math.min(storage.cursor, math.max(#storage.networks, 1))
   storage.dirty = false
+end
+
+--- Naplnění jedné strany spojky: naplnění sítě, do které patří segment strany (i přes jiné spojky),
+--- jinak samotného segmentu. Vypnutá spojka tak zná naplnění obou stran, které odděluje.
+--- @param side table strana spojky { seg, rep }
+--- @return number|nil podíl 0–1, nil = strana bez BUS trubky
+--- @return string|nil kapalina
+function M.side_fill(side)
+  if not (side.rep and side.rep.valid) then return nil end
+  local index = storage.segment_net and storage.segment_net[side.seg]
+  local net = index and storage.networks[index]
+  if net and not net.conflict then return net.fraction, net.fluid end
+  local name, amount, capacity = M.read(side.rep)
+  return capacity > 0 and amount / capacity or 0, name
 end
 
 --- Síť, ve které je spojka.

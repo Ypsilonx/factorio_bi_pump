@@ -71,11 +71,27 @@ function M.ensure_signals(coupler)
   coupler.signal_key = nil
 end
 
+--- Šipka směru vstup → výstup v alt režimu (sprite spojky je souměrný, vstup by nešlo poznat).
+--- Volá se při stavbě, rotaci hráčem i z rozložené kontroly (rotace skriptem/jiným modem událost nevyvolá).
+--- Vstup je na straně, kam spojka „míří“, šipka proto ukazuje opačně (k výstupu).
+--- @param coupler table záznam ze storage.couplers
+function M.ensure_arrow(coupler)
+  local entity = coupler.entity
+  local orientation = (entity.orientation + 0.5) % 1
+  if coupler.arrow and coupler.arrow.valid then
+    if coupler.arrow.orientation ~= orientation then coupler.arrow.orientation = orientation end
+    return
+  end
+  coupler.arrow = rendering.draw_sprite({ sprite = "utility/indication_arrow", target = entity, surface = entity.surface,
+    orientation = orientation, x_scale = 0.6, y_scale = 0.6, only_in_alt_mode = true })
+end
+
 --- Zaeviduje novou spojku (opakované ohlášení téže spojky se ignoruje).
 --- @param entity LuaEntity
 function M.add(entity)
   if storage.couplers[entity.unit_number] then return end
   storage.couplers[entity.unit_number] = { entity = entity, signals = create_signals(entity), sides = { {}, {} } }
+  M.ensure_arrow(storage.couplers[entity.unit_number])
   storage.dirty = true
 end
 
@@ -96,6 +112,7 @@ function M.revalidate()
       M.remove(unit)
     else
       M.ensure_signals(coupler)
+      M.ensure_arrow(coupler)
     end
   end
   storage.dirty = true

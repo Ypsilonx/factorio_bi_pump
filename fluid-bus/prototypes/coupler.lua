@@ -7,6 +7,9 @@ M.NAME = "fb-bus-coupler"
 M.SIGNALS = "fb-bus-coupler-signals"
 M.CATEGORY = "fb-coupler"
 M.INTERVAL_SIGNAL = "fb-balance-interval"
+--- Výstupní signály: naplnění sítě na vstupní a výstupní straně spojky v % (zelený drát).
+M.INPUT_SIGNAL = "fb-input-fill"
+M.OUTPUT_SIGNAL = "fb-output-fill"
 --- Objem fluidboxu spojky – započítá se do kapacity segmentu, proto malý. Laditelné.
 M.FLUID_VOLUME = 10
 --- Suroviny receptu: { kandidáti, počet } – první existující předmět vyhrává. Laditelné.
@@ -53,7 +56,9 @@ function M.ingredient_names(raw)
   return names
 end
 
---- Fluidbox spojky na jedné straně (jen kategorie fb-bus → napojí se jen na BUS trubky).
+--- Fluidbox spojky na jedné straně (jen kategorie busu → napojí se jen na BUS trubky; úplný seznam kategorií
+--- doplní data-final-fixes). Směr toku je jen vizuální (šipka vstup → výstup v alt režimu) – kapalinu
+--- přelévá skript oběma směry, fluidbox stroje bez receptu se s potrubím nevyměňuje.
 --- @param production_type string "input" | "output"
 --- @param direction defines.direction strana napojení
 --- @return table FluidBox
@@ -146,11 +151,21 @@ function M.prototypes(power_kw)
       { icon = "__base__/graphics/icons/signal/signal-clock.png", icon_size = 64 },
       { icon = icons[1].icon, icon_size = 64, scale = 0.25, shift = { 8, 8 } },
     } }
+  --- Signál strany spojky: ikona písmene (I = vstup, O = výstup) se symbolem spojky.
+  local function side_signal(name, letter, order)
+    return { type = "virtual-signal", name = name, subgroup = "virtual-signal", order = "z[fluid-bus]-" .. order,
+      icons = {
+        { icon = "__base__/graphics/icons/signal/signal_" .. letter .. ".png", icon_size = 64 },
+        { icon = icons[1].icon, icon_size = 64, scale = 0.25, shift = { 8, 8 } },
+      } }
+  end
   return {
     { type = "recipe-category", name = M.CATEGORY },
     entity,
     signals,
     interval,
+    side_signal(M.INPUT_SIGNAL, "I", "b[input]"),
+    side_signal(M.OUTPUT_SIGNAL, "O", "c[output]"),
     { type = "item", name = M.NAME, icons = icons, subgroup = "energy-pipe-distribution",
       order = "c[pump]-b[fb-bus-coupler]", place_result = M.NAME, stack_size = 50 },
   }

@@ -137,4 +137,6 @@ data:extend({ { type = "mod-data", name = "fb-data", data = {
   coupler = coupler.NAME,
   coupler_signals = coupler.SIGNALS,
   interval_signal = coupler.INTERVAL_SIGNAL,
+  input_signal = coupler.INPUT_SIGNAL,
+  output_signal = coupler.OUTPUT_SIGNAL,
 } } })
