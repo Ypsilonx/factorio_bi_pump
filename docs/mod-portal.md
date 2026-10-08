@@ -16,15 +16,15 @@ no matter how long the bus is or where the inputs and outputs are.
   pipes**, so the "one tank" bus needs dedicated infrastructure. BUS pipes connect only to BUS pipes,
   couplers and **pumps** – a pump is the gateway between the bus and ordinary pipes.
 - **Exact conservation** – fluid amount and temperature (steam) are preserved.
-- **Circuit network** – network values under the icon of the fluid in the bus: **red wire = amount**,
-  **green wire = fill %**. Burn the surplus only above 90 %, start a backup source below 30 %.
-  The green wire also carries the fill % on the coupler **input [I] and output [O]** side – even
-  while the coupler is disabled. The input side is shown by an arrow in alt mode.
-- **Priority / overflow** – coupler condition "[I] input fill > 50": the bus behind the coupler gets
-  fluid only when the bus in front of it is more than half full. Works without wires.
+- **Circuit network** – one signal on the **green wire: [fluid] = fill %** of the network. Burn the
+  surplus only above 90 %, start a backup source below 30 %. A disabled coupler sends the fill of its
+  fuller side.
+- **Priority / overflow** – coupler condition "[fluid] > 50": the sides are joined only when the bus
+  on one side is more than half full. Works without wires.
 - **Circuit control** – disable a coupler by a condition (like a pump); the *Bus balancing interval*
   signal sets how often its network is balanced.
-- **Status in the coupler window** – network size and fill, no power, not connected, mixed fluids.
+- **Own coupler window** (laid out like the inserter window) – status, preview, network size, fill and
+  amount, electricity, and a *Circuit connection* panel with just Enable/Disable and the condition.
 - **Status light** on the coupler: green = powered, yellow = low power, red = no power (glows at night).
 - **UPS friendly** – networks are balanced every 5 ticks by default (map setting), large buses are
   spread over ticks; see Performance below.
@@ -67,16 +67,17 @@ Factorio 2.0.77, balancing interval 5 ticks, script time after warm-up:
 ## Upgrading from 0.1
 Since 0.2.0 BUS pipes no longer connect to ordinary pipes, tanks or machines. In an existing save such
 connections are cut after the update – put a **pump** between the bus and the ordinary pipe.
+The coupler now sends only the fill % on the green wire; the red-wire amount signal is gone.
 
 ## Compatibility
 Tested (headless integration tests) with: vanilla, Space Age, Pyanodon's modpack, Bob's Logistics,
 Pipe Tiers. BUS variants are generated from all pipes in the game, so other pipe mods should work too.
 
 ## Known limitations
-- With a condition like "[I] > 50" the coupler pulses: after joining, the input may drop below 50 %
+- With a condition like "[fluid] > 50" the coupler pulses: after joining, the fill may drop below 50 %
   and the coupler switches off again. Condition changes are picked up within 1 second.
-- A coupler's enable condition also sees the coupler's own output signals. Use [I] / [O] for it, not
-  the bus fluid icon (amount and fill % add up in the condition).
+- The coupler signal is on the green wire: wired into a network that already carries the same fluid
+  signal (e.g. a tank), the values add up. Keep such networks separate.
 - Steam of different temperatures in one network is mixed (weighted average) – keep 165 °C and
   500 °C steam on separate buses.
 - Two couplers directly next to each other do not connect – put at least one BUS pipe between them.

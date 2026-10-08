@@ -18,18 +18,21 @@ Data stage:
 - `fluid-bus/prototypes/bus_marking_data.lua` – umístění „B“, **generované** z `blender/marking.toml`.
 - `fluid-bus/prototypes/research.lua` – výzkumy s dopočítanými prerekvizitami.
 - `fluid-bus/prototypes/coupler.lua` – spojka (assembling-machine 1×1 bez receptu, 2 fluidboxy s kategoriemi busu,
-  `drain`), virtuální signály `fb-balance-interval`, `fb-input-fill`, `fb-output-fill`, skrytý kombinátor signálů (dva na spojku: červený a zelený drát).
+  `drain`), virtuální signál `fb-balance-interval`, skrytý kombinátor signálu (jeden na spojku, zelený drát).
 
 Runtime (`control.lua` jen napojuje události):
-- `scripts/registry.lua` – evidence spojek ve `storage`, skryté kombinátory (drát s původem `script`),
-  šipka směru v alt režimu (`rendering`, dorovnává ji i rozložená kontrola – rotace skriptem událost nevyvolá).
+- `scripts/registry.lua` – evidence spojek ve `storage`, skrytý kombinátor (drát s původem `script`).
+  `revalidate` převede starší formáty (dva kombinátory) a smaže šipky z vývojové verze.
 - `scripts/topology.lua` – segmenty na stranách spojek, zástupné BUS trubky, přestavba sítí (bez čtení hry).
 - `scripts/network.lua` – čistá logika: segmenty + aktivní spojky → sítě (union-find).
 - `scripts/balance_math.lua` – čistá logika: plán vyrovnání celé sítě (společné naplnění, přelití, konflikt).
 - `scripts/balancer.lua` – každou síť jednou za `fb-balance-interval` ticků srovná celou v jednom ticku.
-- `scripts/signals.lua` – signály (červený drát: [kapalina] = množství, zelený: [kapalina] = %, `fb-input-fill` /
-  `fb-output-fill` = naplnění sítě na vstupní / výstupní straně, i u vypnuté spojky – `topology.side_fill`
-  přes `storage.segment_net`, jinak přímé čtení segmentu), `custom_status` spojky.
+- `scripts/signals.lua` – jediný signál (zelený drát: [kapalina] = naplnění sítě v %; spojka mimo síť posílá
+  plnější stranu – `topology.side_fill` přes `storage.segment_net`, jinak přímé čtení segmentu),
+  `custom_status` a `coupler.state` spojky.
+- `scripts/gui.lua` + `scripts/gui/overview.lua`, `scripts/gui/circuit.lua` – vlastní okno spojky místo
+  nativního (to ukazuje recept a čtení obsahu, které skrýt nejde): přehled vlevo, „Připojení obvodu“
+  vpravo (přepínač v titulku). Podmínka zůstává v control behavior (blueprint, kopírování zdarma).
 - Řízení obvodem: vypnutí podmínkou (`topology.refresh` čte `control_behavior.disabled` → neaktivní hrana),
   signál `fb-balance-interval` (`topology.read_interval`, síť bere nejmenší hodnotu ze svých spojek).
 - `scripts/remote.lua` – rozhraní `fb` (`network_of` vč. platného `interval`, `set_interval`, `rebuild`, `revalidate`, `stats`).
@@ -65,6 +68,8 @@ Grafika:
 | Objem fluidboxu spojky | `fluid-bus/prototypes/coupler.lua` – `FLUID_VOLUME` |
 | Vzhled spojky (rozměry, barvy tělesa, manometr, skříňka, „B“) | `blender/coupler/coupler.toml` (pak spustit build spojky) |
 | Barvy kontrolky podle stavu | `fluid-bus/prototypes/coupler.lua` – `STATUS_COLORS` |
+| Velikost náhledu v okně spojky | `fluid-bus/scripts/gui/overview.lua` – `PREVIEW_WIDTH`, `PREVIEW_HEIGHT` |
+| Jak často se obnovuje otevřené okno spojky | `fluid-bus/scripts/gui.lua` – `REFRESH_TICKS` |
 | Surovina značení v receptu BUS trubky | `fluid-bus/prototypes/bus_pipes.lua` – `MARKING` |
 | Množství značení na kus | `fluid-bus/prototypes/bus_pipes.lua` – `MARKING_PER_PIECE` |
 | Doba výroby BUS varianty | `fluid-bus/prototypes/bus_pipes.lua` – `CRAFT_TIME` |
@@ -129,8 +134,7 @@ zapisovala jen málo segmentů, síť ale zároveň uvízla pod plným. Teď se 
 - Podzemní spoj (`connection_type = "underground"`) smí mít jen jednu `connection_category` – BUS
   podzemní dostane jen první převedenou kategorii (`fb-bus`), takže se nespáruje s běžnou podzemní.
 - Fluidbox stroje bez receptu se s potrubím nevyměňuje – spojka proto přelévá přes sousední BUS trubku.
-- `flow_direction` jiný než `input-output` na fluidboxu spojky ji od trubek odpojí (ověřeno testy) – směr
-  proto ukazuje skriptem kreslená šipka, ne šipky fluidboxu.
+- `flow_direction` jiný než `input-output` na fluidboxu spojky ji od trubek odpojí (ověřeno testy).
 - `max_pipeline_extent` není za běhu čitelný – kontrola extentu běží přes `mod-data` testovacího modu.
 
 ## Ruční kontrola ve hře (před vydáním)
@@ -143,14 +147,18 @@ Spustit `bash tools/link-mod.sh` a hru s modem, v editoru mapy (`/editor`) nebo 
    (v plánovači nastavit trubka → BUS: trubka) – zda je mapování dovolené a kapalina zůstane.
 3. Ikony předmětů a výzkumů, názvy „BUS: Trubka“ a „Spojka busu“ v češtině i angličtině, popisky.
 4. BUS trubka se nenapojí na běžnou trubku ani nádrž, na pumpu ano (pumpa i z modů); BUS podzemní se
-   nespáruje s běžnou. Spojka: na běžnou trubku se nenapojí, na BUS ano; rotace R; šipka v alt režimu
-   míří od vstupu k výstupu (ověřit, že nemíří obráceně, i po rotaci); stav v okně
+   nespáruje s běžnou. Spojka: na běžnou trubku se nenapojí, na BUS ano; rotace R; stav v okně
    spojky („Bus: N segmentů, X %“, „Bez proudu“, „Nepřipojeno k BUS trubce“, „Různé kapaliny“).
-5. Obvodová síť: červený drát ze spojky do lampy/kombinátoru ukáže [kapalina] = množství, zelený = %.
+5. Obvodová síť: zelený drát ze spojky do lampy/kombinátoru ukáže [kapalina] = naplnění v %, červený nic.
    Podmínka zapnutí v okně spojky ji vypne (stav „Vypnuto obvodovou sítí“, žlutá kontrolka); signál
-   „Interval vyrovnávání busu“ jde vybrat a poslat konstantním kombinátorem. Signály [I]/[O] (naplnění
-   vstupu/výstupu) na zeleném drátě; podmínka spojky „[I] > 50“ bez drátů – spojka pouští dál až nad 50 %.
-6. Blueprint a kopírování spojky (skrytý kombinátor se nesmí objevit v blueprintu), zbourání spojky
+   „Interval vyrovnávání busu“ jde vybrat a poslat konstantním kombinátorem. Podmínka „[voda] > 50“ bez
+   drátů – spojka pouští dál až nad 50 % (pulzuje).
+6. Okno spojky: místo nativního okna se otevře vlastní (přehled vlevo, „Připojení obvodu“ vpravo);
+   náhled, stav, síť/naplnění/množství, u vypnuté spojky naplnění stran, pruh elektřiny; tlačítko
+   v titulku skryje/zobrazí panel obvodu (pamatuje si to); „Připojeno k“ ukazuje jen dráty hráče;
+   změna podmínky se projeví; E/Esc a křížek okno zavřou; přetažení okna, poloha se pamatuje; okno se
+   zavře při odchodu z dosahu a při zbourání spojky.
+7. Blueprint a kopírování spojky (i podmínky) (skrytý kombinátor se nesmí objevit v blueprintu), zbourání spojky
    (kapalina zůstane v trubkách).
-7. Vzhled spojky: sedí v řadě trubek (vodorovně i svisle), stín, kontrolka zelená s proudem, červená bez
+8. Vzhled spojky: sedí v řadě trubek (vodorovně i svisle), stín, kontrolka zelená s proudem, červená bez
    proudu, žlutá při nedostatku; v noci svítí.

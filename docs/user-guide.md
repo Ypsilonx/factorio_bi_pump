@@ -26,8 +26,6 @@ Pumpa je jediný přechod mezi busem a běžným potrubím. **Spojka busu se nap
 2. Postav bus z **BUS trubek** – nebo stávající bus **přestav**: BUS trubku můžeš postavit přímo přes
    běžnou (kapalina zůstane), případně použij upgrade planner (trubka → BUS: trubka).
 3. **Místo dosavadních pump** v busu vlož **spojky busu** (1×1, natočené po směru busu).
-   Směr spojky (vstup → výstup) ukazuje **šipka v alt režimu**; důležitý je jen pro signály vstupu
-   a výstupu – vyrovnává se vždy oběma směry.
 4. Spojky **připoj k elektřině** (výchozí odběr 50 kW). Bez proudu spojka nefunguje.
 5. Vstupy a výstupy připoj **pumpou přímo na BUS trubku** (jinak se na bus nenapojí) a za ní běžnou
    trubkou. Pumpa zároveň odbočku od busu oddělí, takže nezvětšuje segment busu (limit 320 políček).
@@ -45,21 +43,27 @@ Pumpa je jediný přechod mezi busem a běžným potrubím. **Spojka busu se nap
 Kontrolka na elektrické skříňce spojky: **zelená** = má proud a pracuje, **žlutá** = málo proudu,
 **červená** = bez proudu. V noci svítí.
 
-V okně spojky (kliknutí) uvidíš:
+Kliknutím na spojku se otevře její okno (rozvržení jako u inserteru):
+- **vlevo** stav s barevnou tečkou, náhled spojky, **Síť: N segmentů**, **Naplnění** a **Množství**
+  (u spojky mimo síť naplnění obou stran) a elektřina,
+- **vpravo** panel **Připojení obvodu** (přepíná se tlačítkem v titulku): čísla sítí připojených drátem,
+  **Povolit/Zakázat** s podmínkou a co spojka vysílá.
+
+Stavy spojky:
 - **Bus: N segmentů, X %** – vše v pořádku, síť má N segmentů naplněných na X %.
 - **Bez proudu** – spojka nemá elektřinu, segmenty na jejích stranách zůstanou oddělené.
+- **Vypnuto obvodovou sítí** – podmínka Povolit/Zakázat není splněná.
 - **Nepřipojeno k BUS trubce** – na jedné ze stran chybí BUS trubka (běžná trubka se nenapojí).
+  Spojka pracuje, jen když má BUS trubku na **obou** stranách.
 - **V síti busu jsou různé kapaliny** – ve spojených segmentech jsou dvě kapaliny; nic se nepřelévá,
   dokud jednu z nich neodstraníš.
 
 ## Obvodová síť
-Spojka vysílá údaje o síti pod **ikonou kapaliny**, která busem teče (voda, ropa, pára…).
-Co čteš, určuje **barva drátu**:
-- **červený drát** – [kapalina] = **množství** kapaliny v celé síti,
-- **zelený drát** – [kapalina] = **naplnění** celé sítě v % (0–100),
-- **zelený drát** – **[I] Naplnění vstupu** a **[O] Naplnění výstupu** spojky v % – naplnění sítě na
-  každé její straně. Vysílá se **i když je spojka vypnutá** (pak se strany liší); zapnutá spojka
-  strany spojí, takže obě hodnoty jsou stejné jako naplnění sítě.
+Spojka vysílá jediný signál na **zeleném drátu**: **[kapalina] = naplnění v %** (0–100), pod ikonou
+kapaliny, která busem teče (voda, ropa, pára…).
+- Zapnutá spojka posílá naplnění celé sítě.
+- Vypnutá (nebo nenapájená) spojka posílá naplnění **plnější ze svých dvou stran** – díky tomu ji
+  podmínka „[voda] > 50“ umí zase zapnout.
 
 Signály stejné barvy se ve Factoriu sčítají – zelený drát od spojky proto nevěď do sítě, kde už je
 stejná kapalina z jiného zdroje (např. z nádrže), jinak se procenta sečtou.
@@ -69,22 +73,20 @@ Příklady (zelený drát ze spojky):
 - **Zapni záložní zdroj pod 30 %**: zelený drát do pumpy záložního zdroje, podmínka „[voda] < 30“.
 
 ### Řízení spojky
-- **Zapnutí/vypnutí** – v okně spojky zaškrtni „Zapnout/vypnout“ a nastav podmínku (jako u pumpy).
+Bez podmínky spojka pracuje pořád (stačí proud a BUS trubky na obou stranách).
+- **Povolit/Zakázat** – v okně spojky zaškrtni „Povolit/Zakázat“ a nastav podmínku (jako u pumpy).
   Vypnutá spojka nepřelévá, segmenty na jejích stranách se oddělí a stav ukáže **Vypnuto obvodovou
   sítí** (žlutá kontrolka). Hodí se např. k odstavení části busu při údržbě.
-- **Přednostní plnění (přepad)** – podmínka spojky **„[I] Naplnění vstupu > 50“**: dokud není bus před
-  spojkou z poloviny plný, kapalina za spojku nejde; nad 50 % se strany spojí a srovnají (klesne-li
-  pak vstup pod 50 %, spojka se zase vypne – pulzuje, to je v pořádku). Funguje i bez
-  drátů – spojka vidí své vlastní signály. Hodí se, když má mít část busu (např. elektrárna) přednost.
+- **Přednostní plnění (přepad)** – podmínka **„[voda] > 50“**: dokud není bus aspoň na jedné straně
+  spojky z poloviny plný, strany zůstanou oddělené; nad 50 % se spojí a srovnají (klesne-li pak
+  naplnění pod 50 %, spojka se zase vypne – pulzuje, to je v pořádku). Funguje **i bez drátů** –
+  spojka vidí svůj vlastní signál. Hodí se, když má mít část busu (např. elektrárna) přednost.
 - **Interval vyrovnávání** – pošli do spojky signál **Interval vyrovnávání busu** (ikona hodin)
   s hodnotou N (1–600): celá její síť se pak vyrovnává každých N ticků místo nastavení mapy.
   Pošle-li se do jedné sítě víc hodnot, platí nejmenší. Bez signálu (nebo 0) platí nastavení mapy.
   Příklad: v noci, kdy bus jen stojí, pošli 60 a ušetříš výkon; při špičce 2.
 
 Spojka změnu podmínky nebo signálu zaregistruje do **1 sekundy**.
-
-Pozor: podmínka spojky vidí i **její vlastní signály**. Signály [I] a [O] jsou k tomu určené; na ikonu
-kapaliny busu podmínku nestav – množství (červený) a procenta (zelený) se v podmínce sečtou.
 
 ## Časté chyby
 - **Spojka na běžné trubce** – nenapojí se; vyměň trubky kolem spojky za BUS trubky.

@@ -8,11 +8,14 @@ Date: 2026-10-08
       keep their BUS variants separate in the same way.
     - Existing saves: BUS pipes touching ordinary pipes, tanks or machines get disconnected after the
       update – put a pump between the bus and the ordinary pipe.
+    - Circuit output simplified to a single signal: green wire, [fluid] = fill %. The red wire
+      (total amount) was removed. A disabled or unpowered coupler sends the fill of its fuller side,
+      so the condition "[fluid] > 50" can switch it on again - e.g. pass fluid on only when the bus
+      in front of it is more than half full. Works without wires.
   Features:
-    - Coupler sends the fill % of the network on its input and output side (green wire, new signals
-      "Bus coupler input fill" and "output fill"), even while disabled. Example: coupler condition
-      "input fill > 50" passes fluid on only when the bus in front of it is more than half full.
-    - Arrow in alt mode shows the coupler direction (input -> output).
+    - Own coupler window instead of the assembling machine window (which showed recipe and other
+      unused circuit options): status, preview, network size, fill and amount, electricity, and a
+      "Circuit connection" panel with Enable/Disable and the condition only.
   Bugfixes:
     - Fixed a bus network getting stuck below full: with no consumption, segments far from the source
       stayed several % lower (about 0.5 % per segment in the network). The tolerance is now evaluated
