@@ -4,6 +4,7 @@ local topology = require("scripts.topology")
 local balancer = require("scripts.balancer")
 local signals = require("scripts.signals")
 local remote_api = require("scripts.remote")
+local gui = require("scripts.gui")
 
 local FILTER = { { filter = "name", name = registry.COUPLER } }
 --- Klonování: i skrytý kombinátor (klon spojky dostane vlastní, naklonovaný se zahodí).
@@ -72,6 +73,7 @@ script.on_init(registry.init)
 script.on_configuration_changed(function()
   registry.init()
   registry.revalidate()
+  gui.reset_all()
 end)
 for _, name in ipairs({ "on_built_entity", "on_robot_built_entity", "on_space_platform_built_entity",
   "script_raised_built", "script_raised_revive" }) do
@@ -91,4 +93,13 @@ script.on_event(defines.events.on_player_rotated_entity, function(event)
   end
 end)
 script.on_event(defines.events.on_tick, on_tick)
+-- Vlastní okno spojky místo nativního.
+script.on_event(defines.events.on_gui_opened, gui.on_opened)
+script.on_event(defines.events.on_gui_closed, gui.on_closed)
+script.on_event(defines.events.on_gui_click, gui.on_click)
+for _, name in ipairs({ "on_gui_checked_state_changed", "on_gui_elem_changed", "on_gui_selection_state_changed",
+  "on_gui_text_changed" }) do
+  script.on_event(defines.events[name], gui.on_changed)
+end
+script.on_nth_tick(gui.REFRESH_TICKS, gui.refresh)
 remote_api.register()

@@ -3,7 +3,7 @@
 package.path = "fluid-bus/?.lua;tests/unit/?.lua;" .. package.path
 
 --- Seznam testovacích sad; každá vrací pole { "název", funkce }.
-local SUITES = { "test_locale", "test_availability", "test_bus_pipes", "test_bus_overlay", "test_graphics", "test_research", "test_coupler", "test_network", "test_balance_math" }
+local SUITES = { "test_locale", "test_availability", "test_bus_pipes", "test_bus_overlay", "test_graphics", "test_research", "test_coupler", "test_network", "test_balance_math", "test_gui", "test_gui_names" }
 
 local pass, fail = 0, 0
 for _, suite in ipairs(SUITES) do
