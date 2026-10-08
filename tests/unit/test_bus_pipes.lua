@@ -101,13 +101,19 @@ return {
     A.eq(skipped[1].name, "pipe-to-ground-b", "druhá vynechaná")
     A.eq(skipped[1].reason, "duplicate-pair", "důvod")
   end },
-  { "with_bus_category: výchozí, řetězec, pole, bez duplikátu", function()
-    A.eq(table.concat(bus.with_bus_category(nil), ","), "default,fb-bus", "nil")
-    A.eq(table.concat(bus.with_bus_category("niobium"), ","), "niobium,fb-bus", "řetězec")
-    A.eq(table.concat(bus.with_bus_category({ "default", "x" }), ","), "default,x,fb-bus", "pole")
-    A.eq(table.concat(bus.with_bus_category({ "fb-bus" }), ","), "fb-bus", "už obsahuje")
+  { "bus_categories: vlastní jmenný prostor, žádná kategorie společná s běžnými trubkami", function()
+    A.eq(table.concat(bus.bus_categories(nil), ","), "fb-bus", "nil")
+    A.eq(table.concat(bus.bus_categories("niobium"), ","), "fb-bus-niobium", "řetězec")
+    A.eq(table.concat(bus.bus_categories({ "default", "x" }), ","), "fb-bus,fb-bus-x", "pole")
   end },
-  { "entity: zachová kategorie Py a extent, přidá fb-bus", function()
+  { "add_categories: pumpa si nechá původní a přidá busové bez duplikátů", function()
+    local connection = {}
+    bus.add_categories(connection, { "fb-bus", "fb-bus-x" })
+    A.eq(table.concat(connection.connection_category, ","), "default,fb-bus,fb-bus-x", "výchozí")
+    bus.add_categories(connection, { "fb-bus" })
+    A.eq(table.concat(connection.connection_category, ","), "default,fb-bus,fb-bus-x", "bez duplikátu")
+  end },
+  { "entity: zachová oddělení kategorií Py a extent v kategoriích busu", function()
     local raw = F.new()
     local proto = F.pipe(raw, "niobium-pipe", { category = { "niobium" }, extent = 640 })
     proto.next_upgrade = "something"
@@ -115,22 +121,26 @@ return {
     A.eq(new.name, "fb-bus-niobium-pipe", "jméno")
     A.eq(new.fluid_box.max_pipeline_extent, 640, "extent zděděn")
     for i, c in ipairs(new.fluid_box.pipe_connections) do
-      A.eq(table.concat(c.connection_category, ","), "niobium,fb-bus", "kategorie konektoru " .. i)
+      if c.connection_type == "underground" then
+        A.eq(c.connection_category, "fb-bus-niobium", "podzemní konektor " .. i)
+      else
+        A.eq(table.concat(c.connection_category, ","), "fb-bus-niobium", "kategorie konektoru " .. i)
+      end
     end
     A.eq(new.next_upgrade, nil, "next_upgrade vynulován")
     A.eq(new.minable.result, "fb-bus-niobium-pipe", "vytěží se BUS předmět")
     A.eq(new.fast_replaceable_group, "pipe", "rychlá výměna s původní")
     A.eq(proto.fluid_box.pipe_connections[1].connection_category[2], nil, "originál nezměněn")
   end },
-  { "entity: podzemní – nadzemní konektor dostane fb-bus, podzemní spoj beze změny", function()
+  { "entity: podzemní – oba konektory jen fb-bus, podzemní spoj jedinou kategorií", function()
     -- Engine povoluje u podzemního spoje nejvýš jednu kategorii.
     local raw = F.new()
     local proto = F.underground(raw, "pipe-to-ground", { distance = 10 })
     local new = bus.entity(proto, av.copy)
-    A.eq(table.concat(new.fluid_box.pipe_connections[1].connection_category, ","), "default,fb-bus", "nadzemní")
+    A.eq(table.concat(new.fluid_box.pipe_connections[1].connection_category, ","), "fb-bus", "nadzemní")
     local under = new.fluid_box.pipe_connections[2]
     A.eq(under.max_underground_distance, 10, "dosah")
-    A.eq(under.connection_category, nil, "podzemní spoj beze změny")
+    A.eq(under.connection_category, "fb-bus", "podzemní nespáruje s běžnou")
   end },
   { "entity: lokalizovaný název odkazuje na původní", function()
     local raw = F.new()

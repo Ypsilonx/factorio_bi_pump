@@ -70,23 +70,33 @@ M.MARKING_PER_PIECE = 1
 --- Doba výroby receptu v sekundách. Laditelné.
 M.CRAFT_TIME = 0.5
 
---- Kategorie konektoru rozšířené o kategorii busu (chybějící kategorie = "default").
---- @param category string|string[]|nil
+--- Kategorie konektoru převedené do jmenného prostoru busu: "default" → "fb-bus", jiná X → "fb-bus-X".
+--- BUS trubka tak nemá žádnou kategorii společnou s běžnými trubkami (nenapojí se na ně), ale BUS
+--- varianty si zachovají vzájemné oddělení jako originály (např. tiery trubek s vlastní kategorií).
+--- @param category string|string[]|nil chybějící = "default"
 --- @return string[]
-function M.with_bus_category(category)
+function M.bus_categories(category)
+  local source = category == nil and { "default" } or type(category) == "string" and { category } or category
   local list = {}
-  if category == nil then
-    list = { "default" }
-  elseif type(category) == "string" then
-    list = { category }
-  else
-    for i, value in ipairs(category) do list[i] = value end
+  for i, value in ipairs(source) do
+    list[i] = value == "default" and M.CATEGORY or M.PREFIX .. value
   end
-  for _, value in ipairs(list) do
-    if value == M.CATEGORY then return list end
-  end
-  list[#list + 1] = M.CATEGORY
   return list
+end
+
+--- Přidá kategorie do konektoru (bez duplikátů) – pumpa a spojka se tak napojí na BUS trubky.
+--- @param connection table PipeConnectionDefinition (upraví se na místě)
+--- @param categories string[] přidávané kategorie
+function M.add_categories(connection, categories)
+  local list, seen = {}, {}
+  local current = connection.connection_category
+  for _, value in ipairs(current == nil and { "default" } or type(current) == "string" and { current } or current) do
+    list[#list + 1], seen[value] = value, true
+  end
+  for _, value in ipairs(categories) do
+    if not seen[value] then list[#list + 1], seen[value] = value, true end
+  end
+  connection.connection_category = list
 end
 
 --- Vybere surovinu značení podle M.MARKING.
@@ -97,7 +107,8 @@ function M.marking_item(raw)
   end
 end
 
---- Postaví BUS variantu entity (trubky nebo podzemní): kopie s kategorií busu na všech konektorech.
+--- Postaví BUS variantu entity (trubky nebo podzemní): kopie s kategoriemi busu místo původních
+--- na všech konektorech – napojí se jen na BUS trubky, spojku a pumpu (ty kategorie busu dostanou).
 --- @param proto table původní prototyp
 --- @param copy fun(t: table): table hloubková kopie (table.deepcopy ve hře)
 --- @param decorate fun(new: table)|nil úprava grafiky (bus_overlay), v unit testech nil
@@ -111,10 +122,10 @@ function M.entity(proto, copy, decorate)
   new.localised_name = { "entity-name.fb-bus-pipe", proto.localised_name or { "entity-name." .. proto.name } }
   new.localised_description = { "entity-description.fb-bus-pipe" }
   for _, connection in ipairs(new.fluid_box.pipe_connections) do
-    -- Podzemní spoj smí mít jen jednu kategorii (engine to odmítne) a spojka se na něj nenapojuje.
-    if connection.connection_type ~= "underground" then
-      connection.connection_category = M.with_bus_category(connection.connection_category)
-    end
+    local categories = M.bus_categories(connection.connection_category)
+    -- Podzemní spoj smí mít jen jednu kategorii (engine víc odmítne); vlastní kategorie busu zabrání
+    -- spárování BUS podzemní s běžnou.
+    connection.connection_category = connection.connection_type == "underground" and categories[1] or categories
   end
   if decorate then decorate(new) end
   return new

@@ -25,21 +25,25 @@ return {
     end
     log("FB-TEST INFO BUS trubky: " .. table.concat(names, ", "))
   end),
-  check("kompatibilita: BUS konektory mají kategorii fb-bus i původní kategorie", function()
+  check("kompatibilita: BUS konektory mají jen kategorie busu odvozené z původních", function()
     for _, name in ipairs(prototypes.mod_data["fb-data"].data.bus_pipes) do
       local source = prototypes.entity[name:sub(#"fb-bus-" + 1)]
       local bus_connections = prototypes.entity[name].fluidbox_prototypes[1].pipe_connections
       local source_connections = source.fluidbox_prototypes[1].pipe_connections
       for i, connection in ipairs(bus_connections) do
         local categories = category_set(connection.connection_category)
-        -- Podzemní spoj má jen původní kategorii (engine víc nedovolí).
-        if connection.connection_type ~= "underground" then
-          H.truthy(categories["fb-bus"], name .. " konektor " .. i .. " fb-bus")
-        end
         for c in pairs(category_set(source_connections[i].connection_category)) do
-          H.truthy(categories[c], name .. " konektor " .. i .. " zachová " .. c)
+          local expected = c == "default" and "fb-bus" or "fb-bus-" .. c
+          H.truthy(categories[expected], name .. " konektor " .. i .. " má " .. expected)
+          H.truthy(not categories[c], name .. " konektor " .. i .. " nemá původní " .. c)
         end
       end
+    end
+  end),
+  check("kompatibilita: pumpy se napojí na BUS trubky", function()
+    for name, pump in pairs(prototypes.get_entity_filtered({ { filter = "type", type = "pump" } })) do
+      local categories = category_set(pump.fluidbox_prototypes[1].pipe_connections[1].connection_category)
+      H.truthy(categories["fb-bus"], name .. " má fb-bus")
     end
   end),
   check("kompatibilita: BUS varianta má stejný extent jako původní (mody upravující trubky)", function()

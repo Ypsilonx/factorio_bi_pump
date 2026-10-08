@@ -23,14 +23,41 @@ return {
     H.truthy(H.requires("fb-fluid-bus", "fluid-handling"), "vyžaduje fluid-handling (i nepřímo)")
   end),
   {
-    name = "BUS trubka se napojí na běžnou (jeden segment)",
+    name = "BUS trubka se na běžnou nenapojí",
     setup = function(ctx)
       ctx.plain = H.place(ctx, "pipe", 0, 0)
       ctx.bus = H.place(ctx, "fb-bus-pipe", 1, 0)
       ctx.plain.insert_fluid({ name = "water", amount = 100 })
     end,
     steps = { { ticks = 5, run = function(ctx)
-      H.eq(ctx.bus.fluidbox.get_fluid_segment_id(1), ctx.plain.fluidbox.get_fluid_segment_id(1), "stejný segment")
+      H.eq(#ctx.bus.fluidbox.get_connections(1), 0, "BUS bez napojení")
+      H.eq(ctx.bus.fluidbox.get_fluid_segment_contents(1).water, nil, "voda nepřetekla")
+    end } },
+  },
+  {
+    name = "pumpa se napojí na BUS trubku i na běžnou (přechod busu)",
+    setup = function(ctx)
+      ctx.pump = H.place(ctx, "pump", 0, 0)
+      local p = ctx.pump.position
+      ctx.bus = ctx.surface.create_entity({ name = "fb-bus-pipe", position = { p.x, p.y - 1.5 }, force = "player" })
+      ctx.plain = ctx.surface.create_entity({ name = "pipe", position = { p.x, p.y + 1.5 }, force = "player" })
+    end,
+    steps = { { ticks = 5, run = function(ctx)
+      local owners = {}
+      for _, box in ipairs(ctx.pump.fluidbox.get_connections(1)) do owners[box.owner.name] = true end
+      H.truthy(owners["fb-bus-pipe"], "pumpa – BUS trubka")
+      H.truthy(owners["pipe"], "pumpa – běžná trubka")
+    end } },
+  },
+  {
+    name = "BUS podzemní se nespáruje s běžnou podzemní",
+    setup = function(ctx)
+      ctx.a = H.place(ctx, "fb-bus-pipe-to-ground", 0, 0, { direction = defines.direction.west })
+      ctx.b = H.place(ctx, "pipe-to-ground", 5, 0, { direction = defines.direction.east })
+      ctx.a.insert_fluid({ name = "water", amount = 100 })
+    end,
+    steps = { { ticks = 5, run = function(ctx)
+      H.eq(ctx.b.fluidbox.get_fluid_segment_contents(1).water, nil, "voda nepřetekla")
     end } },
   },
   {
@@ -47,10 +74,9 @@ return {
   {
     name = "rychlá výměna běžné trubky za BUS zachová kapalinu",
     setup = function(ctx)
-      ctx.left = H.place(ctx, "pipe", 0, 0)
-      H.place(ctx, "pipe", 1, 0)
-      H.place(ctx, "pipe", 2, 0)
-      ctx.left.insert_fluid({ name = "water", amount = 300 })
+      -- Jediná trubka: BUS varianta se na běžné sousedy už nenapojí, kapalina by se rozdělila.
+      ctx.left = H.place(ctx, "pipe", 1, 0)
+      ctx.left.insert_fluid({ name = "water", amount = 80 })
     end,
     steps = {
       { ticks = 5, run = function(ctx)
@@ -58,8 +84,8 @@ return {
       end },
       { ticks = 5, run = function(ctx)
         H.eq(ctx.replaced.name, "fb-bus-pipe", "na místě je BUS trubka")
-        local total = ctx.left.fluidbox.get_fluid_segment_contents(1).water or 0
-        H.truthy(math.abs(total - 300) < 0.01, "voda zachována (" .. total .. ")")
+        local total = ctx.replaced.fluidbox.get_fluid_segment_contents(1).water or 0
+        H.truthy(math.abs(total - 80) < 0.01, "voda zachována (" .. total .. ")")
       end },
     },
   },

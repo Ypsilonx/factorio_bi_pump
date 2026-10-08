@@ -1,5 +1,6 @@
 -- Výkonový scénář: dlouhý bus (N úseků po 29 trubkách) se spojkami (s modem fluid-bus) nebo s pumpami
--- (bez něj), napájení velkými sloupy, zdroj vody na začátku a odběr na konci (infinity pipe).
+-- (bez něj), napájení velkými sloupy, zdroj vody na začátku a odběr na konci (infinity pipe,
+-- u busu přes pumpu).
 -- Počet úseků a interval vyrovnávání zapisuje tools/run-perf.sh do souboru count.lua vedle tohoto skriptu
 -- (require jde jen při načítání souboru, ne v on_init).
 local COUNT, INTERVAL, GROUP = table.unpack(require("count"))
@@ -27,6 +28,12 @@ script.on_init(function()
 
   local source = surface.create_entity({ name = "infinity-pipe", position = { x + 0.5, 0.5 }, force = "player" })
   source.set_infinity_pipe_filter({ name = "water", percentage = 1, mode = "at-least" })
+  --- Pumpa mezi infinity pipe a busem (BUS trubka se na běžné potrubí nenapojí); posune x za ni.
+  local function gateway()
+    surface.create_entity({ name = "pump", position = { x + 2, 0.5 }, force = "player", direction = defines.direction.east })
+    x = x + 2
+  end
+  if bus then gateway() end
   local eei = surface.create_entity({ name = "electric-energy-interface", position = { 3, -2 }, force = "player" })
   eei.electric_buffer_size = 1e12
   eei.power_production = 1e9
@@ -50,6 +57,7 @@ script.on_init(function()
     end
     pole(x)
   end
+  if bus then gateway() end
   local sink = surface.create_entity({ name = "infinity-pipe", position = { x + 1.5, 0.5 }, force = "player" })
   sink.set_infinity_pipe_filter({ name = "water", percentage = 0, mode = "at-most" })
   log("FB-PERF built " .. COUNT .. " " .. (bus and "couplers" or "pumps") .. " length " .. x)

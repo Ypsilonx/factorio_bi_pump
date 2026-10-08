@@ -3,6 +3,7 @@ local bus_pipes = require("prototypes.bus_pipes")
 local overlay = require("prototypes.bus_overlay")
 local research = require("prototypes.research")
 local coupler = require("prototypes.coupler")
+local av = require("prototypes.availability")
 
 local pairs_, skipped = bus_pipes.collect(data.raw)
 for _, entry in ipairs(skipped) do
@@ -11,6 +12,8 @@ end
 
 local marking = bus_pipes.marking_item(data.raw)
 local names = {}
+--- Kategorie napojení všech BUS variant (pro spojku a pumpy), v pořadí prvního výskytu.
+local categories, seen_category = {}, {}
 
 --- Vytvoří BUS entitu, předmět a recept k jedné původní entitě; vrátí recept.
 --- @param type_name string "pipe" | "pipe-to-ground"
@@ -31,6 +34,15 @@ local function create(type_name, source, source_item, count)
     require("__quality__.prototypes.recycling").generate_recycling_recipe(recipe)
   end
   names[#names + 1] = entity.name
+  for _, connection in ipairs(entity.fluid_box.pipe_connections) do
+    if connection.connection_type ~= "underground" then
+      for _, category in ipairs(connection.connection_category) do
+        if not seen_category[category] then
+          categories[#categories + 1], seen_category[category] = category, true
+        end
+      end
+    end
+  end
   return recipe
 end
 
@@ -107,6 +119,18 @@ for _, pair in ipairs(pairs_) do
       .. (target and (" | prerequisites: " .. table.concat(target.prerequisites or {}, ", ")) or ""))
   end
 end
+
+-- BUS trubky se napojí jen na sebe, spojku a pumpu: spojka dostane jen kategorie busu, pumpy (i z jiných
+-- modů) je dostanou navíc k původním – pumpa je jediný přechod mezi busem a běžným potrubím.
+for _, fluid_box in ipairs(data.raw["assembling-machine"][coupler.NAME].fluid_boxes) do
+  for _, connection in ipairs(fluid_box.pipe_connections) do connection.connection_category = categories end
+end
+for _, name in ipairs(av.sorted_keys(data.raw.pump)) do
+  for _, connection in ipairs(data.raw.pump[name].fluid_box.pipe_connections) do
+    if connection.connection_type ~= "underground" then bus_pipes.add_categories(connection, categories) end
+  end
+end
+log("fluid-bus: bus connection categories: " .. table.concat(categories, ", "))
 
 data:extend({ { type = "mod-data", name = "fb-data", data = {
   bus_pipes = names,
