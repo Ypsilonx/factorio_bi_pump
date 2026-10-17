@@ -6,7 +6,7 @@ se stejným naplněním – celý hlavní bus se chová jako jedna nádrž.
 - Návod pro hráče: `docs/user-guide.md`
 - Text pro mod portál: `docs/mod-portal.md`
 - Vývoj (struktura, kde ladit hodnoty, testy, výkon, ruční kontrola): `docs/development.md`
-- Návrh a plány: `docs/superpowers/specs/`, `docs/superpowers/plans/`
+- Návrh (proč je to tak, jak to je): `docs/specs/`; stav a plán verzí: `STATUS.md`, `ROADMAP.md`
 
 ## Rychlý start vývoje
 - Unit testy: `bash tools/run-unit.sh`
