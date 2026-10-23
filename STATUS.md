@@ -20,6 +20,8 @@ Další milník z `ROADMAP.md` (M3 kompatibilita / M4 rozšíření) – zatím 
   strany musí mít segment; regresní test v `robustness.lua`. Našel ji `run-perf.sh`.
 - `run-perf.sh` hledá sloupec `scriptUpdate` podle hlavičky (2.1 přidalo sloupce), scénář má BUS trubku
   mezi poslední spojkou a pumpou. Výkon na 2.1.23 zapsán (o něco lepší než 2.0.77).
+- 0.3.1 vydaná na portál (2026-10-23): Tipy a triky ve hře (`prototypes/tips.lua`, locale en/cs);
+  unit 71/71, vanilla 45/45, Space Age 46/46. Ruční kontrola okna tipů ve hře zatím neproběhla.
 - Portál: popis pro 0.3.0 vč. Buy Me a Coffee (`publish.sh --details`). Balíček `dist/fluid-bus_0.3.0.zip` ověřen.
 - Testy 2026-10-23 na 2.1.23: unit 71/71, vanilla 45/45 (+1 skip recyklace), Space Age 46/46,
   obecné kontroly s Py 3.1 a Bob 3.0 8/8.
@@ -28,7 +30,7 @@ Další milník z `ROADMAP.md` (M3 kompatibilita / M4 rozšíření) – zatím 
 
 ## Rozpracováno
 
-- 0.3.1 (nevydaná): Tipy a triky ve hře (`prototypes/tips.lua`, locale en/cs), unit 71/71 + vanilla 45/45 OK. Zbývá ruční kontrola textů ve hře a vydání.
+- Nic.
 
 ## Další krok
 
