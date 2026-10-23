@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.1
+Date: 2026-10-23
+  Features:
+    - In-game Tips and tricks: BUS pipes, bus coupler, status and common mistakes, circuit network,
+      balancing interval.
+---------------------------------------------------------------------------------------------------
 Version: 0.3.0
 Date: 2026-10-23
   Changes:

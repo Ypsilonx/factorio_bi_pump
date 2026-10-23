@@ -28,7 +28,7 @@ Další milník z `ROADMAP.md` (M3 kompatibilita / M4 rozšíření) – zatím 
 
 ## Rozpracováno
 
-- Nic.
+- 0.3.1 (nevydaná): Tipy a triky ve hře (`prototypes/tips.lua`, locale en/cs), unit 71/71 + vanilla 45/45 OK. Zbývá ruční kontrola textů ve hře a vydání.
 
 ## Další krok
 
