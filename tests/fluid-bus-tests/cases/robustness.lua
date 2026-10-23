@@ -97,6 +97,22 @@ return {
     },
   },
   {
+    -- Regrese 2.1: pumpa nemá segment – jako zástupce strany zastavila vyrovnávání celé sítě.
+    name = "pumpa přímo u spojky nezastaví síť (strana k pumpě je nepřipojená)",
+    setup = function(ctx)
+      two_segments(ctx)
+      ctx.c2 = H.place(ctx, "fb-bus-coupler", 0, 7)
+      H.power(ctx, 0, 7)
+      H.place(ctx, "pump", 0, 8, { position = { ctx.origin.x + 0.5, ctx.origin.y + 9 },
+        direction = defines.direction.south })
+      ctx.a.insert_fluid({ name = "water", amount = 600 })
+    end,
+    steps = { { ticks = 300, run = function(ctx)
+      H.truthy(amount(ctx.b) > 0, "voda přetekla do B (" .. amount(ctx.b) .. ")")
+      H.eq(ctx.c2.custom_status.label[1], "fb-status.not-connected", "spojka u pumpy")
+    end } },
+  },
+  {
     name = "dvě spojky těsně vedle sebe netvoří síť (zástupce nesmí být spojka)",
     setup = function(ctx)
       column(ctx, 0, -3, -1)

@@ -23,7 +23,8 @@ local function enabled(entity)
 end
 
 --- Přečte obě strany spojky (segment a sousední BUS trubku), napájení a zapnutí.
---- Zástupcem nesmí být jiná spojka: její fluidbox do potrubí neproudí a kapacitu segmentu nevrací.
+--- Zástupcem smí být jen entita se segmentem (BUS trubka). Jiná spojka ne – její fluidbox do potrubí
+--- neproudí; pumpa ne – od 2.1 nemá segment a síť by se nikdy nevyrovnala (strana k pumpě je nepřipojená).
 --- @param coupler table záznam ze storage.couplers
 --- @return boolean true, pokud se něco změnilo
 function M.refresh(coupler)
@@ -33,8 +34,8 @@ function M.refresh(coupler)
     local side = coupler.sides[i]
     local neighbours = entity.get_fluid_box_neighbours(i)
     local owner = neighbours and neighbours[1] and neighbours[1].entity
-    local rep = owner and owner.name ~= COUPLER and owner or nil
-    local segment = rep and entity.get_fluid_segment_id(i) or nil
+    local rep = owner and owner.name ~= COUPLER and owner.has_fluid_segment(1) and owner or nil
+    local segment = rep and entity.has_fluid_segment(i) and entity.get_fluid_segment_id(i) or nil
     if side.seg ~= segment or side.rep ~= rep then changed = true end
     side.seg, side.rep = segment, rep
   end
@@ -73,8 +74,11 @@ end
 
 --- Přečte segment přes zástupnou trubku.
 --- @param rep LuaEntity BUS trubka v segmentu
---- @return string|nil kapalina, number množství, number kapacita segmentu
+--- @return string|nil kapalina, number|nil množství, number|nil kapacita segmentu (nil = trubka zatím
+---   nemá segment)
 function M.read(rep)
+  -- Od 2.1 metody segmentu bez segmentu vyhodí chybu (2.0 vracelo nil).
+  if not rep.has_fluid_segment(1) then return nil, nil, nil end
   local fluid = rep.get_fluid_segment_fluid(1)
   return fluid and fluid.name, fluid and fluid.amount or 0, rep.get_fluid_segment_capacity(1)
 end
@@ -123,6 +127,7 @@ function M.side_fill(side)
   local net = index and storage.networks[index]
   if net and not net.conflict then return net.fraction, net.fluid end
   local name, amount, capacity = M.read(side.rep)
+  if not capacity then return nil end
   return capacity > 0 and amount / capacity or 0, name
 end
 

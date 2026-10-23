@@ -41,8 +41,10 @@ JSON
     | sed -E 's/.*max: ([0-9.]+) ms.*/\1/')"
   echo "$line" | sed -E 's/.*Performed ([0-9]+) updates in ([0-9.]+) ms.*/\1 \2/' \
     | awk -v v="$variant" -v m="$max" '{ printf "FB-PERF %s %.3f ms/tick, max %s ms\n", v, $2 / $1, m }'
-  # Čas samotného skriptu (sloupec scriptUpdate v ns) po ustálení – od ticku 600.
-  awk -F, -v v="$variant" '/^t[0-9]+,/ { t = substr($1, 2) + 0; if (t >= 600) { s = $43 / 1e6; sum += s; n++; if (s > mx) mx = s } }
+  # Čas samotného skriptu (sloupec scriptUpdate v ns) po ustálení – od ticku 600. Sloupec se hledá podle
+  # hlavičky – jeho pořadí se mezi verzemi hry mění (2.1 přidalo planetsUpdate aj.).
+  awk -F, -v v="$variant" '/^tick,/ { for (i = 1; i <= NF; i++) if ($i == "scriptUpdate") col = i }
+    /^t[0-9]+,/ && col { t = substr($1, 2) + 0; if (t >= 600) { s = $col / 1e6; sum += s; n++; if (s > mx) mx = s } }
     END { if (n) printf "FB-PERF %s skript po ustálení: průměr %.3f ms, max %.3f ms\n", v, sum / n, mx }' "$RUN/bench.log"
 }
 

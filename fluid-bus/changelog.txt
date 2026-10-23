@@ -17,6 +17,9 @@ Date: 2026-10-23
   Bugfixes:
     - BUS pipes now show the "B" marking in their entity icon too (map editor, Factoriopedia), not only
       in the item icon.
+    - A pump placed directly next to a coupler stopped balancing of the whole bus network (in Factorio 2.1
+      pumps have no fluid segment). That coupler side now counts as not connected – put at least one
+      BUS pipe between the coupler and the pump.
   Compatibility:
     - Tested on Factorio 2.1 with Space Age, Pyanodon's modpack 3.1 and Bob's Logistics 3.0.
     - Pipe Tiers has no Factorio 2.1 release yet; support stays in place for when it is updated.

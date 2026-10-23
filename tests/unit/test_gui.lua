@@ -66,6 +66,7 @@ local entity = {
 --- Strana s BUS trubkou: segment 5 (v žádné síti) – naplnění se čte z trubky.
 local rep = {
   valid = true,
+  has_fluid_segment = function() return true end,
   get_fluid_segment_fluid = function() return { name = "water", amount = 300, temperature = 15 } end,
   get_fluid_segment_capacity = function() return 1000 end,
 }

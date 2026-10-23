@@ -22,6 +22,8 @@ local function balance(net)
       return
     end
     local name, amount, capacity = topology.read(rep)
+    -- Segment se po stavbě teprve tvoří – síť se vyrovná v příštím intervalu.
+    if not capacity then return end
     reps[i], states[i] = rep, { fluid = name, amount = amount, capacity = capacity }
   end
   local plan = m.plan_network(states)

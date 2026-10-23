@@ -57,7 +57,12 @@ script.on_init(function()
     end
     pole(x)
   end
-  if bus then gateway() end
+  if bus then
+    -- BUS trubka mezi poslední spojkou a pumpou: pumpa nemá segment (2.1), spojka přímo u ní by nepřelévala.
+    x = x + 1
+    surface.create_entity({ name = pipe, position = { x + 0.5, 0.5 }, force = "player" })
+    gateway()
+  end
   local sink = surface.create_entity({ name = "infinity-pipe", position = { x + 1.5, 0.5 }, force = "player" })
   sink.set_infinity_pipe_filter({ name = "water", percentage = 0, mode = "at-most" })
   log("FB-PERF built " .. COUNT .. " " .. (bus and "couplers" or "pumps") .. " length " .. x)
