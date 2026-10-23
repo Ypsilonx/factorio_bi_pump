@@ -106,6 +106,8 @@ Spojka změnu podmínky nebo signálu zaregistruje do **1 sekundy**.
 - **Dlouhé odbočky bez pumpy** zvětšují segment busu – pumpu dej hned u busu.
 - **Dvě spojky těsně vedle sebe** nefungují (stav „Nepřipojeno k BUS trubce“) – mezi spojkami musí být
   aspoň jedna BUS trubka.
+- **Pumpa přímo u spojky** – ta strana spojky se nepočítá (stav „Nepřipojeno k BUS trubce“); mezi
+  spojku a pumpu dej aspoň jednu BUS trubku. Ve Factoriu 2.1 pumpa nemá vlastní segment potrubí.
 
 ## Nastavení modu
 - **Odběr spojky busu (kW)** – Nastavení → Mody → Při spuštění, výchozí 50.
@@ -122,6 +124,6 @@ a interval 5 ticků: segment o 100 trubkách ±10 %, o 300 trubkách ±3 %. Dlou
 zvládnou i velmi rychlé pumpy; u krátkých segmentů a velkých průtoků zmenši interval.
 
 ## Výkon
-Bus se 110 spojkami (interval 5) stojí skript v průměru ~0,08 ms na tick, nejhůř ~0,4 ms
-(Factorio 2.0.77). Extrémní bus s 1000 spojkami v jedné síti stojí ~3 ms jednou za interval – u takového
+Bus se 110 spojkami (interval 5) stojí skript v průměru ~0,1 ms na tick, nejhůř ~0,6 ms
+(Factorio 2.1.23). Extrémní bus s 1000 spojkami v jedné síti stojí ~5 ms jednou za interval – u takového
 busu interval zvětši.

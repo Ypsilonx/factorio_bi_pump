@@ -58,13 +58,13 @@ There is no fixed flow cap. Between two balancing ticks the fill of segments dri
 ±3 % for 300-pipe segments. Lower the interval for short segments and very fast pumps.
 
 ## Performance
-Factorio 2.0.77, balancing interval 5 ticks, script time after warm-up:
+Factorio 2.1.23, balancing interval 5 ticks, script time after warm-up (bus filling up):
 
 | Bus | average | worst tick |
 |---|---|---|
-| 110 couplers (one network) | 0.15 ms | 0.77 ms |
-| 1000 couplers (one network, extreme) | ~1.1 ms | ~5.6 ms once per interval |
-| 1000 couplers (19 networks of 52 segments) | 0.77 ms | 2.6 ms |
+| 110 couplers (one network) | 0.10 ms | 0.61 ms |
+| 1000 couplers (one network, extreme) | ~0.8 ms | ~5.3 ms once per interval |
+| 1000 couplers (19 networks of 52 segments) | 0.60 ms | 2.2 ms |
 
 ## Upgrading from 0.2
 Since 0.3.0 (Factorio 2.1) the coupler no longer sends the fill % signal – pipes read their contents
@@ -91,3 +91,10 @@ other pipe mods should work too.
 - Steam of different temperatures in one network is mixed (weighted average) – keep 165 °C and
   500 °C steam on separate buses.
 - Two couplers directly next to each other do not connect – put at least one BUS pipe between them.
+- A pump directly next to a coupler does not count as that coupler's side (status "Not connected to a BUS
+  pipe") – put at least one BUS pipe between the coupler and the pump.
+
+## Support
+Enjoying the mod? You can support its development:
+
+[![Buy Me a Coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://buymeacoffee.com/ypsilonx)

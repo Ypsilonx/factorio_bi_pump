@@ -108,17 +108,19 @@ prochází všechny recepty podzemní, ne jen ten nejdřív dostupný.
 Mody, které v `data-final-fixes` mění trubky (Pipe Tiers), musí běžet před námi – patří do
 volitelných závislostí v `fluid-bus/info.json` a do `tests/fluid-bus-tests/info.json` (kontrola extentu).
 
-## Výkon (2026-10-08, Factorio 2.0.77, `tools/run-perf.sh <počet> 1800`, interval vyrovnávání 5 ticků)
+## Výkon (2026-10-23, Factorio 2.1.23, `tools/run-perf.sh <počet> 1800`, interval vyrovnávání 5 ticků)
 Bus z úseků po 29 trubkách, voda z infinity pipe na začátku, odběr na konci (u busu přes pumpu – BUS
-trubka se na infinity pipe nenapojí), napájení velkými sloupy.
-Stejný bus s vanilla pumpami jako srovnání. Čísla „skript“ = sloupec `scriptUpdate` po ustálení (tick ≥ 600).
+trubka se na infinity pipe nenapojí; mezi poslední spojkou a pumpou BUS trubka), napájení velkými sloupy.
+Stejný bus s vanilla pumpami jako srovnání. Čísla „skript“ = sloupec `scriptUpdate` po ustálení (tick ≥ 600; `run-perf.sh` hledá sloupec podle hlavičky).
+Během měření se bus plní (log `FB-PERF network … fill`) – měří se pracující síť, ne nečinná.
 
 | Bus | spojky: průměr / nejhorší tick | pumpy: průměr / nejhorší tick | skript (ustálený běh) |
 |---|---|---|---|
-| 110 úseků (≈ tvůj bus) | 0,323 / 1,4 ms | 0,152 / 0,53 ms | průměr 0,152 ms, max 0,77 ms |
-| 1000 úseků (extrém) | 1,341 / 8,7 ms | 0,208 / 0,52 ms | průměr 1,09 ms, max 5,6 ms (vyrovnání celé sítě) |
-| 1000 úseků, sítě po 52 segmentech (`run-perf.sh 1000 1800 5 52`) | 0,973 / 3,5 ms | 0,207 / 1,3 ms | průměr 0,77 ms, max 2,6 ms |
+| 110 úseků (≈ tvůj bus) | 0,222 / 1,0 ms | 0,109 / 0,34 ms | průměr 0,102 ms, max 0,61 ms |
+| 1000 úseků (extrém) | 0,949 / 6,1 ms | 0,190 / 0,46 ms | průměr 0,78 ms, max 5,3 ms (vyrovnání celé sítě) |
+| 1000 úseků, sítě po 52 segmentech (`run-perf.sh 1000 1800 5 52`) | 0,732 / 3,3 ms | 0,187 / 0,46 ms | průměr 0,60 ms, max 2,2 ms |
 
+Na 2.0.77 (0.2.0) to bylo 0,152 / 1,09 / 0,77 ms skriptu – 2.1 je o něco rychlejší.
 Měření z 0.1.0 (110 úseků: skript 0,077 ms) bylo podhodnocené: chyba tolerance (opravena v 0.2.0)
 zapisovala jen málo segmentů, síť ale zároveň uvízla pod plným. Teď se při plnění zapisují všechny.
 
