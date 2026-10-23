@@ -29,9 +29,9 @@ local function create(type_name, source, source_item, count)
   local item = bus_pipes.item(data.raw, source_item, entity, overlay.icons(data.raw.item[source_item], table.deepcopy))
   local recipe = bus_pipes.recipe(source_item, count, marking, item.name)
   data:extend({ entity, item, recipe })
-  -- Recyklaci generuje quality v data-updates, tedy dřív než my – BUS předměty ji musí dostat zde.
-  if mods["quality"] then
-    require("__quality__.prototypes.recycling").generate_recycling_recipe(recipe)
+  -- Recyklaci generuje recycler v data-updates, tedy dřív než my – BUS předměty ji musí dostat zde.
+  if mods["recycler"] then
+    require("__recycler__.recycling").generate_recycling_recipe(recipe)
   end
   names[#names + 1] = entity.name
   for _, connection in ipairs(entity.fluid_box.pipe_connections) do
@@ -76,8 +76,8 @@ local coupler_recipe = {
 }
 data:extend({ coupler_recipe })
 if base_tech then table.insert(base_tech.effects, { type = "unlock-recipe", recipe = coupler.NAME }) end
-if mods["quality"] then
-  require("__quality__.prototypes.recycling").generate_recycling_recipe(coupler_recipe)
+if mods["recycler"] then
+  require("__recycler__.recycling").generate_recycling_recipe(coupler_recipe)
 end
 log("fluid-bus: " .. coupler.NAME .. " ← " .. serpent.line(coupler_recipe.ingredients))
 

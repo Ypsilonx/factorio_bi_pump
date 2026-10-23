@@ -43,12 +43,12 @@ return {
     end,
     steps = {
       { ticks = 300, run = function(ctx)
-        H.eq(ctx.bottom.fluidbox.get_fluid_segment_contents(1).water, nil, "vypnutá spojka nepřelévá")
+        H.eq(select(2, H.segment_fluid(ctx.bottom, "water")), nil, "vypnutá spojka nepřelévá")
         H.eq(ctx.c.custom_status.label[1], "fb-status.disabled", "stav")
         ctx.cc.get_control_behavior().get_section(1).set_slot(1, { value = SIGNAL_A, min = 0 })
       end },
       { ticks = 300, run = function(ctx)
-        local water = ctx.bottom.fluidbox.get_fluid_segment_contents(1).water or 0
+        local water = select(2, H.segment_fluid(ctx.bottom, "water")) or 0
         H.truthy(water > 250, "zapnutá spojka přelévá (" .. water .. ")")
         H.eq(ctx.c.custom_status.label[1], "fb-status.ok", "stav")
       end },

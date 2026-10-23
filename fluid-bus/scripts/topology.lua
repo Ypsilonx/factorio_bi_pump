@@ -28,14 +28,13 @@ end
 --- @return boolean true, pokud se něco změnilo
 function M.refresh(coupler)
   local entity = coupler.entity
-  local fluidbox = entity.fluidbox
   local changed = false
   for i = 1, 2 do
     local side = coupler.sides[i]
-    local connections = fluidbox.get_connections(i)
-    local owner = connections[1] and connections[1].owner
+    local neighbours = entity.get_fluid_box_neighbours(i)
+    local owner = neighbours and neighbours[1] and neighbours[1].entity
     local rep = owner and owner.name ~= COUPLER and owner or nil
-    local segment = rep and fluidbox.get_fluid_segment_id(i) or nil
+    local segment = rep and entity.get_fluid_segment_id(i) or nil
     if side.seg ~= segment or side.rep ~= rep then changed = true end
     side.seg, side.rep = segment, rep
   end
@@ -76,9 +75,8 @@ end
 --- @param rep LuaEntity BUS trubka v segmentu
 --- @return string|nil kapalina, number množství, number kapacita segmentu
 function M.read(rep)
-  local fluidbox = rep.fluidbox
-  local name, amount = next(fluidbox.get_fluid_segment_contents(1) or {})
-  return name, amount or 0, fluidbox.get_capacity(1)
+  local fluid = rep.get_fluid_segment_fluid(1)
+  return fluid and fluid.name, fluid and fluid.amount or 0, rep.get_fluid_segment_capacity(1)
 end
 
 --- Přestaví sítě z uloženého stavu spojek (bez čtení hry). Vyrovnání sítí rozloží do intervalu,

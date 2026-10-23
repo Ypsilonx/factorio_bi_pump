@@ -13,6 +13,16 @@ function H.truthy(value, what)
   if not value then error(what .. ": čekána pravdivá hodnota", 0) end
 end
 
+--- Kapalina v segmentu, ve kterém je trubka (fluidbox 1).
+--- @param pipe LuaEntity
+--- @param fluid string|nil jen tato kapalina; jiná kapalina v segmentu vrátí nil
+--- @return string|nil jméno, number|nil množství
+function H.segment_fluid(pipe, fluid)
+  local content = pipe.get_fluid_segment_fluid(1)
+  if not content or (fluid and content.name ~= fluid) then return nil, nil end
+  return content.name, content.amount
+end
+
 --- Postaví entitu na dlaždici (x, y) relativně k výřezu testu.
 function H.place(ctx, name, x, y, extra)
   local spec = { name = name, position = { ctx.origin.x + x + 0.5, ctx.origin.y + y + 0.5 }, force = "player",

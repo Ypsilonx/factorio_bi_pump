@@ -1,6 +1,6 @@
 # Fluid Bus – návod pro hráče
 
-Mod řeší dlouhý kapalinový „main bus“. Ve Factoriu 2.0 se dlouhé potrubí dělí pumpami na segmenty
+Mod řeší dlouhý kapalinový „main bus“. Ve Factoriu 2.x se dlouhé potrubí dělí pumpami na segmenty
 (segment smí mít nejvýš 320 políček) a pumpa tlačí jen jedním směrem a nejvýš 1200/s. Vedlejší zdroj
 pak nezásobí nic „proti proudu“, před pumpou se bus přeplní a za ní chybí kapalina.
 

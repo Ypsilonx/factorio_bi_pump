@@ -23,8 +23,11 @@ overhaul mody, bez znatelné ceny v UPS.
   přes spojku, odběr energie úměrný přenosu.
 - Hotovo když: upřesní se při výběru.
 
-### Factorio 2.1 ⏳
-- Přechod až s přechodem serveru: krátký test kompatibility, nová řada `factorio_version`.
+### 0.3.0 – Factorio 2.1 🔄
+- Hotovo: přechod na fluid API v LuaEntity (LuaFluidBox v 2.1 zrušen), recyklace z modu `recycler`,
+  unit + vanilla + Space Age zelené.
+- Kompatibilita na 2.1 ověřena: Py 3.1, Bob 3.0; Pipe Tiers pro 2.1 zatím nevyšel.
+- Zbývá: ruční kontrola ve hře, `run-perf.sh`, vydání.
 
 ## Mimo rozsah (vědomě neděláme)
 

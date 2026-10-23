@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.0
+Date: 2026-10-23
+  Changes:
+    - Updated for Factorio 2.1 (requires 2.1; Factorio 2.0 stays on 0.2.0).
+    - Fluid access migrated to the 2.1 LuaEntity fluid API (LuaFluidBox was removed).
+    - Recycling recipes for BUS pipes and the coupler now come from the recycler mod.
+  Compatibility:
+    - Tested on Factorio 2.1 with Space Age, Pyanodon's modpack 3.1 and Bob's Logistics 3.0.
+    - Pipe Tiers has no Factorio 2.1 release yet; support stays in place for when it is updated.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.0
 Date: 2026-10-08
   Changes:

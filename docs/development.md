@@ -1,7 +1,7 @@
 # Vývoj – Fluid Bus
 
 ## Prostředí
-Factorio 2.0.77 (Steam, proměnná `FACTORIO_EXE`), Lua 5.3 pro unit testy, Git Bash pro `tools/*.sh`,
+Factorio 2.1.23 (Steam, proměnná `FACTORIO_EXE`), Lua 5.3 pro unit testy, Git Bash pro `tools/*.sh`,
 Blender pro grafiku (`blender/*.py`).
 
 ## Struktura
@@ -90,14 +90,18 @@ Grafika:
 - Výkon: `bash tools/run-perf.sh [počet_úseků=1000] [ticků=1800]`
 - Log generování (co vzniklo, co se vynechalo a proč): `grep "fluid-bus:" .test-run/<varianta>/create.log`
 
-## Kompatibilita (ověřeno 2026-10-04, Factorio 2.0.77)
+## Kompatibilita (ověřeno 2026-10-23, Factorio 2.1.23)
 | Mody | Výsledek | Vzniklé BUS varianty |
 |---|---|---|
-| vanilla | 38/38 (+1 přeskočen – recyklace jen s quality) | pipe, pipe-to-ground (výzkum `fb-fluid-bus` za `fluid-handling`) |
-| Space Age | 39/39 | pipe, pipe-to-ground; recyklační recepty BUS předmětů i spojky vznikají |
-| pymodpack 3.0.0 (pyindustry 3.0.21, pyhightech 3.0.19, pyalienlife 3.0.67, …) | 6/6 | pipe, niobium-pipe, ht-pipes, vessel + jejich podzemní; každá za vlastním výzkumem `fb-fluid-bus-<trubka>` |
-| boblogistics 2.1.1 + boblibrary 2.1.0 | 6/6 | pipe, bob-copper-pipe, bob-steel-pipe, bob-plastic-pipe + jejich podzemní; plastová za `fb-fluid-bus-bob-plastic-pipe` (`plastics`) |
-| pipe-tiers 1.0.2 | 6/6 | BUS varianty mají stejný extent jako původní (volitelná závislost `? pipe-tiers` – načte se před námi) |
+| vanilla | 46/46 (+1 přeskočen – recyklace jen s `recycler`) | pipe, pipe-to-ground (výzkum `fb-fluid-bus` za `advanced-circuit`) |
+| Space Age | 47/47 | pipe, pipe-to-ground; recyklační recepty BUS předmětů i spojky vznikají |
+| pymodpack 3.1.0 (pyindustry 3.1.6, pyhightech 3.1.5, pyalienlife 3.1.8, pypostprocessing 3.1.7, …) | 7/7 | pipe, niobium-pipe, ht-pipes, vessel + jejich podzemní; každá za vlastním výzkumem `fb-fluid-bus-<trubka>` |
+| boblogistics 3.0.2 + boblibrary 3.0.1 | 7/7 | pipe, bob-copper-pipe, bob-steel-pipe, bob-plastic-pipe + jejich podzemní; vše v `fb-fluid-bus` (Bob 3.0 odemyká plastovou trubku výzkumem `plastics`, který je v uzávěru `advanced-circuit`) |
+| pipe-tiers 1.0.2 | 7/7, jen s `factorio_version` ručně přepsaným na 2.1 | pro 2.1 zatím nevyšel – verzi pro 2.0 hra odmítne načíst; naše strana (pořadí přes `? pipe-tiers`, stejný extent) funguje |
+
+Cizí mody pro 2.1 stahovat z portálu do zvláštní složky (ne do `%APPDATA%`), pak
+`MODS_SOURCE=<složka> bash tools/run-tests.sh mods <mod>` – postup v `references/research-compat.md`
+skillu `factorio-mod`.
 
 Pozn.: Py umí podzemní trubky i odlít z roztaveného kovu (`casting-…`); párování s trubkou proto
 prochází všechny recepty podzemní, ne jen ten nejdřív dostupný.

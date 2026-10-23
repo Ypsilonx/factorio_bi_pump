@@ -21,7 +21,7 @@ run() {
   echo "return { $COUNT, $INTERVAL, $GROUP }" > "$RUN/mods/fb-perf/count.lua"
   if [ "$with_mod" = true ]; then cp -r "$ROOT/fluid-bus" "$RUN/mods/fluid-bus"; fi
   cat > "$RUN/mods/mod-list.json" <<JSON
-{"mods":[{"name":"base","enabled":true},{"name":"elevated-rails","enabled":false},{"name":"quality","enabled":false},
+{"mods":[{"name":"base","enabled":true},{"name":"elevated-rails","enabled":false},{"name":"quality","enabled":false},{"name":"recycler","enabled":false},
 {"name":"space-age","enabled":false},{"name":"fluid-bus","enabled":$with_mod},{"name":"fb-perf","enabled":true}]}
 JSON
   printf '[path]\nread-data=__PATH__executable__/../../data\nwrite-data=%s/write-data\n' "$RUN_W" > "$RUN/config.ini"

@@ -11,7 +11,7 @@ end
 
 --- Množství kapaliny v segmentu, ve kterém je trubka.
 local function amount(pipe)
-  local _, value = next(pipe.fluidbox.get_fluid_segment_contents(1) or {})
+  local _, value = H.segment_fluid(pipe)
   return value or 0
 end
 
@@ -39,7 +39,7 @@ return {
     steps = {
       { ticks = 300, run = function(ctx)
         H.truthy(remote.call("fb", "network_of", ctx.c.unit_number).conflict, "nejdřív konflikt")
-        ctx.b.remove_fluid({ name = "crude-oil", amount = 1000 })
+        ctx.b.extract_fluid({ name = "crude-oil", amount = 1000 })
       end },
       { ticks = 400, run = function(ctx)
         H.eq(remote.call("fb", "network_of", ctx.c.unit_number).conflict, false, "konflikt zrušen")
@@ -55,8 +55,8 @@ return {
     end,
     steps = {
       { ticks = 300, run = function(ctx)
-        ctx.a.remove_fluid({ name = "water", amount = 1000 })
-        ctx.b.remove_fluid({ name = "water", amount = 1000 })
+        ctx.a.extract_fluid({ name = "water", amount = 1000 })
+        ctx.b.extract_fluid({ name = "water", amount = 1000 })
       end },
       { ticks = 200, run = function(ctx)
         ctx.a.insert_fluid({ name = "steam", amount = 300, temperature = 165 })

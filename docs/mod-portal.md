@@ -2,7 +2,7 @@
 
 **Make your whole fluid main bus behave like one single tank.**
 
-In Factorio 2.0 a long pipeline has to be split by pumps (a fluid segment may span at most 320 tiles).
+In Factorio 2.x a long pipeline has to be split by pumps (a fluid segment may span at most 320 tiles).
 Pumps push only one way and at most 1200/s, so a secondary source can't feed anything "upstream",
 the bus overfills in front of a pump and runs dry behind it.
 
@@ -70,8 +70,9 @@ connections are cut after the update – put a **pump** between the bus and the 
 The coupler now sends only the fill % on the green wire; the red-wire amount signal is gone.
 
 ## Compatibility
-Tested (headless integration tests) with: vanilla, Space Age, Pyanodon's modpack, Bob's Logistics,
-Pipe Tiers. BUS variants are generated from all pipes in the game, so other pipe mods should work too.
+Tested on Factorio 2.1 (headless integration tests) with: vanilla, Space Age, Pyanodon's modpack 3.1,
+Bob's Logistics 3.0. Pipe Tiers has no Factorio 2.1 release yet – Fluid Bus already loads after it, so its
+pipe extents carry over once it is updated. BUS variants are generated from all pipes in the game, so other pipe mods should work too.
 
 ## Known limitations
 - With a condition like "[fluid] > 50" the coupler pulses: after joining, the fill may drop below 50 %

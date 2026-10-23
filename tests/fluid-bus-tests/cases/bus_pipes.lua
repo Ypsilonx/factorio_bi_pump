@@ -30,8 +30,8 @@ return {
       ctx.plain.insert_fluid({ name = "water", amount = 100 })
     end,
     steps = { { ticks = 5, run = function(ctx)
-      H.eq(#ctx.bus.fluidbox.get_connections(1), 0, "BUS bez napojení")
-      H.eq(ctx.bus.fluidbox.get_fluid_segment_contents(1).water, nil, "voda nepřetekla")
+      H.eq(#(ctx.bus.get_fluid_box_neighbours(1) or {}), 0, "BUS bez napojení")
+      H.eq(select(2, H.segment_fluid(ctx.bus, "water")), nil, "voda nepřetekla")
     end } },
   },
   {
@@ -44,7 +44,7 @@ return {
     end,
     steps = { { ticks = 5, run = function(ctx)
       local owners = {}
-      for _, box in ipairs(ctx.pump.fluidbox.get_connections(1)) do owners[box.owner.name] = true end
+      for _, box in ipairs(ctx.pump.get_fluid_box_neighbours(1) or {}) do owners[box.entity.name] = true end
       H.truthy(owners["fb-bus-pipe"], "pumpa – BUS trubka")
       H.truthy(owners["pipe"], "pumpa – běžná trubka")
     end } },
@@ -57,7 +57,7 @@ return {
       ctx.a.insert_fluid({ name = "water", amount = 100 })
     end,
     steps = { { ticks = 5, run = function(ctx)
-      H.eq(ctx.b.fluidbox.get_fluid_segment_contents(1).water, nil, "voda nepřetekla")
+      H.eq(select(2, H.segment_fluid(ctx.b, "water")), nil, "voda nepřetekla")
     end } },
   },
   {
@@ -68,7 +68,7 @@ return {
       ctx.a.insert_fluid({ name = "water", amount = 100 })
     end,
     steps = { { ticks = 5, run = function(ctx)
-      H.eq(ctx.a.fluidbox.get_fluid_segment_id(1), ctx.b.fluidbox.get_fluid_segment_id(1), "stejný segment")
+      H.eq(ctx.a.get_fluid_segment_id(1), ctx.b.get_fluid_segment_id(1), "stejný segment")
     end } },
   },
   {
@@ -84,14 +84,14 @@ return {
       end },
       { ticks = 5, run = function(ctx)
         H.eq(ctx.replaced.name, "fb-bus-pipe", "na místě je BUS trubka")
-        local total = ctx.replaced.fluidbox.get_fluid_segment_contents(1).water or 0
+        local total = select(2, H.segment_fluid(ctx.replaced, "water")) or 0
         H.truthy(math.abs(total - 80) < 0.01, "voda zachována (" .. total .. ")")
       end },
     },
   },
   {
     name = "se Space Age jdou BUS trubky recyklovat",
-    requires = "quality",
+    requires = "recycler",
     steps = { { ticks = 1, run = function()
       for _, name in ipairs(prototypes.mod_data["fb-data"].data.bus_pipes) do
         H.truthy(prototypes.recipe[name .. "-recycling"], "recyklace " .. name)

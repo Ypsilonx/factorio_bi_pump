@@ -1,24 +1,31 @@
 # Stav projektu
 
-Aktualizováno: 2026-10-17
+Aktualizováno: 2026-10-23
 
 ## Cíl
 
-Další milník z `ROADMAP.md` (M3 kompatibilita / M4 rozšíření) – zatím nevybráno.
+0.3.0 – přechod na Factorio 2.1 (2.1.23) beze změny funkčnosti.
 
 ## Hotovo
 
-- 0.2.0 vydaná na portál (2026-10-08), ruční kontrola ve hře podle checklistu proběhla.
-- Testy: unit 71/71, vanilla 46/46 (+1 skip, 2026-10-17); Space Age a mody (Py, Bob, Pipe Tiers)
-  ověřeny k vydání 0.2.0 – viz `docs/development.md`.
+- 0.2.0 vydaná na portál (2026-10-08) pro Factorio 2.0.
+- 0.3.0 (nevydaná): `factorio_version` 2.1, runtime na nové fluid API `LuaEntity` (`get_fluid_box_neighbours`,
+  `get_fluid_segment_fluid/capacity/id`, `get_fluid`, `extract_fluid`), recyklace z `__recycler__.recycling`,
+  `run-tests.sh`/`run-perf.sh` znají vestavěný mod `recycler` a závislosti `+`.
+- Testy 2026-10-23 na 2.1.23: unit 71/71, vanilla 46/46 (+1 skip recyklace), Space Age 47/47.
+- Kompatibilita 2026-10-23: pymodpack 3.1.0 7/7, boblogistics 3.0.2 7/7, pipe-tiers 1.0.2 7/7 jen
+  s ručně přepsanou `factorio_version` (pro 2.1 nevyšel, hra ho nenačte) – viz `docs/development.md`.
 
 ## Rozpracováno
 
-- Nic.
+- Ruční kontrola 0.3.0 ve hře (checklist v `docs/development.md`).
 
 ## Další krok
 
-1. Vybrat mody pro M3 (které další mody s trubkami/pumpami má smysl otestovat) nebo rozšíření pro M4.
+1. Ruční kontrola ve hře – navíc: BUS trubky v 2.1 dědí z vanilla trubek obvodový konektor (čtení obsahu
+   potrubí drátem) – ověřit vzhled konektoru s BUS značením.
+2. Před vydáním: `run-perf.sh` a zápis do `docs/development.md` (sekce Výkon je ještě z 2.0.77).
+3. Až vyjde Pipe Tiers pro 2.1: `mods pipe-tiers` znovu.
 
 ## Otevřené otázky / slepé uličky
 

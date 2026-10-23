@@ -29,10 +29,10 @@ return {
       H.place(ctx, "fb-bus-pipe", 3, 1)
     end,
     steps = { { ticks = 2, run = function(ctx)
-      H.eq(#ctx.plain.fluidbox.get_connections(1) + #ctx.plain.fluidbox.get_connections(2), 0, "běžná trubka")
-      H.eq(#ctx.bus.fluidbox.get_connections(1), 1, "BUS nahoře")
-      H.eq(#ctx.bus.fluidbox.get_connections(2), 1, "BUS dole")
-      H.truthy(ctx.bus.fluidbox.get_fluid_segment_id(1) ~= ctx.bus.fluidbox.get_fluid_segment_id(2), "dva segmenty")
+      H.eq(#(ctx.plain.get_fluid_box_neighbours(1) or {}) + #(ctx.plain.get_fluid_box_neighbours(2) or {}), 0, "běžná trubka")
+      H.eq(#(ctx.bus.get_fluid_box_neighbours(1) or {}), 1, "BUS nahoře")
+      H.eq(#(ctx.bus.get_fluid_box_neighbours(2) or {}), 1, "BUS dole")
+      H.truthy(ctx.bus.get_fluid_segment_id(1) ~= ctx.bus.get_fluid_segment_id(2), "dva segmenty")
     end } },
   },
   {

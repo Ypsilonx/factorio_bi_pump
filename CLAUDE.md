@@ -1,4 +1,4 @@
-# Fluid Bus (mod do Factoria 2.0)
+# Fluid Bus (mod do Factoria 2.1)
 
 BUS varianty všech trubek ve hře a spojka busu, která drží všechny propojené segmenty na stejném
 naplnění – celý hlavní bus se chová jako jedna nádrž. Publikováno na mods.factorio.com (`fluid-bus`).

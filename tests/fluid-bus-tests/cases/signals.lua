@@ -46,12 +46,12 @@ return {
       { ticks = 300, run = function(ctx)
         local fill = ctx.c.get_signal(WATER, GREEN_WIRE)
         H.truthy(fill >= 45 and fill <= 55, "plnější strana ≈ 50 % (" .. fill .. ")")
-        H.eq(ctx.top.fluidbox.get_fluid_segment_contents(1).water, nil, "pod 50 % nepouští")
+        H.eq(select(2, H.segment_fluid(ctx.top, "water")), nil, "pod 50 % nepouští")
         H.eq(ctx.c.custom_status.label[1], "fb-status.disabled", "stav")
         ctx.bottom.insert_fluid({ name = "water", amount = 300 })
       end },
       { ticks = 300, run = function(ctx)
-        local water = ctx.top.fluidbox.get_fluid_segment_contents(1).water or 0
+        local water = select(2, H.segment_fluid(ctx.top, "water")) or 0
         H.truthy(water > 0, "nad 50 % pouští dál (" .. water .. ")")
       end },
     },

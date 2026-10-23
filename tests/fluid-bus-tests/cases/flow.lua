@@ -10,8 +10,8 @@ end
 
 --- Naplnění segmentu trubky (0–1).
 local function fill(pipe)
-  local _, amount = next(pipe.fluidbox.get_fluid_segment_contents(1) or {})
-  return (amount or 0) / pipe.fluidbox.get_capacity(1)
+  local _, amount = H.segment_fluid(pipe)
+  return (amount or 0) / pipe.get_fluid_segment_capacity(1)
 end
 
 --- Řetěz segmentů po `length` trubkách se spojkami mezi nimi (napájenými). Vrátí první trubky segmentů.
@@ -38,7 +38,7 @@ local function flow_steps(ticks, rate, check)
       -- Kontrola před tokem tohoto ticku: mod vyrovnává v on_tick dřív než testovací mod.
       check(ctx)
       ctx.pipes[1].insert_fluid({ name = "water", amount = rate })
-      ctx.taken = ctx.pipes[#ctx.pipes].remove_fluid({ name = "water", amount = rate })
+      ctx.taken = ctx.pipes[#ctx.pipes].extract_fluid({ name = "water", amount = rate })
     end }
   end
   return steps

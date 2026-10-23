@@ -64,10 +64,11 @@ local entity = {
   get_circuit_network = function(id) return { network_id = id == 1 and 11 or 22 } end,
 }
 --- Strana s BUS trubkou: segment 5 (v žádné síti) – naplnění se čte z trubky.
-local rep = { valid = true, fluidbox = {
-  get_fluid_segment_contents = function() return { water = 300 } end,
-  get_capacity = function() return 1000 end,
-} }
+local rep = {
+  valid = true,
+  get_fluid_segment_fluid = function() return { name = "water", amount = 300, temperature = 15 } end,
+  get_fluid_segment_capacity = function() return 1000 end,
+}
 local coupler = { entity = entity, sides = { { seg = 5, rep = rep }, {} }, state = "disabled" }
 storage = { couplers = { [7] = coupler }, networks = {}, coupler_net = {}, segment_net = {} }
 

@@ -10,7 +10,7 @@ end
 
 --- Obsah segmentu, ve kterém je trubka: jméno a množství.
 local function contents(pipe)
-  local name, amount = next(pipe.fluidbox.get_fluid_segment_contents(1) or {})
+  local name, amount = H.segment_fluid(pipe)
   return name, amount or 0
 end
 
@@ -50,7 +50,7 @@ return {
     steps = refill_steps(80, function(ctx)
       local last = ctx.pipes[#ctx.pipes]
       local _, amount = contents(last)
-      local fill = amount / last.fluidbox.get_capacity(1)
+      local fill = amount / last.get_fluid_segment_capacity(1)
       H.truthy(fill > 0.99, "vzdálený segment " .. string.format("%.3f", fill))
     end),
   },
@@ -98,7 +98,7 @@ return {
     steps = { { ticks = 400, run = function(ctx)
       local _, b = contents(ctx.b)
       H.truthy(b > 200, "pára přetekla (" .. b .. ")")
-      H.truthy(math.abs(ctx.b.fluidbox[1].temperature - 500) < 1, "teplota 500 °C")
+      H.truthy(math.abs(ctx.b.get_fluid(1).temperature - 500) < 1, "teplota 500 °C")
     end } },
   },
   {

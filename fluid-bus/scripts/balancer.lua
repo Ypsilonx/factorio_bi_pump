@@ -32,8 +32,8 @@ local function balance(net)
   local removed, heat, donors = 0, 0, {}
   for i, delta in ipairs(plan.deltas) do
     if delta < 0 then
-      local fluid = reps[i].fluidbox[1]
-      local taken = reps[i].remove_fluid({ name = plan.fluid, amount = -delta })
+      local fluid = reps[i].get_fluid(1)
+      local taken = reps[i].extract_fluid({ name = plan.fluid, amount = -delta })
       removed = removed + taken
       heat = heat + taken * (fluid and fluid.temperature or 0)
       donors[#donors + 1] = reps[i]
