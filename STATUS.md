@@ -4,12 +4,12 @@ Aktualizováno: 2026-10-23
 
 ## Cíl
 
-0.3.0 – přechod na Factorio 2.1 (2.1.23); spojka bez výstupního signálu (obsah busu čte BUS trubka).
+Další milník z `ROADMAP.md` (M3 kompatibilita / M4 rozšíření) – zatím nevybráno.
 
 ## Hotovo
 
 - 0.2.0 vydaná na portál (2026-10-08) pro Factorio 2.0.
-- 0.3.0 (nevydaná): `factorio_version` 2.1, runtime na nové fluid API `LuaEntity` (`get_fluid_box_neighbours`,
+- 0.3.0 vydaná na portál (2026-10-23) pro Factorio 2.1: `factorio_version` 2.1, runtime na nové fluid API `LuaEntity` (`get_fluid_box_neighbours`,
   `get_fluid_segment_fluid/capacity/id`, `get_fluid`, `extract_fluid`), recyklace z `__recycler__.recycling`,
   `run-tests.sh`/`run-perf.sh` znají vestavěný mod `recycler` a závislosti `+`.
 - 0.3.0: spojka nic nevysílá (zrušen skrytý kombinátor, `signals.lua` → `status.lua`), podmínka a signál
@@ -28,13 +28,12 @@ Aktualizováno: 2026-10-23
 
 ## Rozpracováno
 
-- Ruční kontrola 0.3.0 ve hře (checklist v `docs/development.md`).
+- Nic.
 
 ## Další krok
 
-1. Ruční kontrola ve hře podle checklistu (body 3, 5, 7 a pumpa přímo u spojky = „Nepřipojeno“).
-2. Vydání: `bash tools/publish.sh --details` – až po ruční kontrole a na pokyn uživatele.
-3. Až vyjde Pipe Tiers pro 2.1: `mods pipe-tiers` znovu.
+1. Až vyjde Pipe Tiers pro 2.1: `mods pipe-tiers` znovu.
+2. Vybrat mody pro M3 nebo rozšíření pro M4.
 
 ## Otevřené otázky / slepé uličky
 
