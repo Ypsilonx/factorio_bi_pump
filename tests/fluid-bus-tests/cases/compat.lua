@@ -51,6 +51,11 @@ return {
       H.eq(extent.bus, extent.source, "extent " .. name)
     end
   end),
+  check("kompatibilita: ikona BUS entity má „B“ (editor mapy, Factoriopedie)", function()
+    for name, ok in pairs(prototypes.mod_data["fb-test-icons"].data) do
+      H.truthy(ok, "ikona entity " .. name)
+    end
+  end),
   check("kompatibilita: spouštěč výzkumu nečeká na předmět, který sám odemyká", function()
     for _, name in ipairs(prototypes.mod_data["fb-data"].data.bus_pipes) do
       for _, tech_name in ipairs(H.unlocking_techs(name)) do

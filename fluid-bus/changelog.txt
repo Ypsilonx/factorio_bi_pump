@@ -14,6 +14,9 @@ Date: 2026-10-23
       "[fluid] > 2500"). A coupler condition such as "[fluid] > 50" without a wire stops working –
       wire a BUS pipe in front of the coupler to it.
     - The coupler's Enable/Disable condition and the "Bus balancing interval" signal work as before.
+  Bugfixes:
+    - BUS pipes now show the "B" marking in their entity icon too (map editor, Factoriopedia), not only
+      in the item icon.
   Compatibility:
     - Tested on Factorio 2.1 with Space Age, Pyanodon's modpack 3.1 and Bob's Logistics 3.0.
     - Pipe Tiers has no Factorio 2.1 release yet; support stays in place for when it is updated.

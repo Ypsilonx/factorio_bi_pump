@@ -15,6 +15,7 @@ Aktualizováno: 2026-10-23
 - 0.3.0: spojka nic nevysílá (zrušen skrytý kombinátor, `signals.lua` → `status.lua`), podmínka a signál
   intervalu beze změny; obsah busu čte drátem BUS trubka (zděděné vanilla čtení 2.1). Starý save se
   skrytým kombinátorem ověřen jednorázovým scénářem: načte se bez chyby, kombinátor zmizí, síť jede.
+- Ikona BUS entit má „B“ (dřív jen předmět – v editoru mapy chybělo); hlídá `compat.lua`.
 - Testy 2026-10-23 na 2.1.23: unit 71/71, vanilla 44/44 (+1 skip recyklace), Space Age 45/45,
   obecné kontroly s Py 3.1 a Bob 3.0 8/8.
 - Kompatibilita 2026-10-23: pymodpack 3.1.0 7/7, boblogistics 3.0.2 7/7, pipe-tiers 1.0.2 7/7 jen

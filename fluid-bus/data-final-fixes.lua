@@ -27,6 +27,8 @@ local function create(type_name, source, source_item, count)
     if #missing > 0 then log("fluid-bus: no marking on " .. new.name .. ": " .. table.concat(missing, ", ")) end
   end)
   local item = bus_pipes.item(data.raw, source_item, entity, overlay.icons(data.raw.item[source_item], table.deepcopy))
+  -- Entita by jinak měla zděděnou ikonu bez „B“ (editor mapy, Factoriopedie, upgrade planner).
+  entity.icon, entity.icon_size, entity.icons = nil, nil, table.deepcopy(item.icons)
   local recipe = bus_pipes.recipe(source_item, count, marking, item.name)
   data:extend({ entity, item, recipe })
   -- Recyklaci generuje recycler v data-updates, tedy dřív než my – BUS předměty ji musí dostat zde.

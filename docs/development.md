@@ -149,7 +149,7 @@ Spustit `bash tools/link-mod.sh` a hru s modem, v editoru mapy (`/editor`) nebo 
    vypadá i na trubkách z modů (Py, Bob).
 2. BUS trubka postavená přes běžnou (rychlá výměna) i **upgrade planner** z běžné trubky na BUS
    (v plánovači nastavit trubka → BUS: trubka) – zda je mapování dovolené a kapalina zůstane.
-3. Ikony předmětů a výzkumů, názvy „BUS: Trubka“ a „Spojka busu“ v češtině i angličtině, popisky.
+3. Ikony předmětů, entit („B“ i v paletě editoru mapy) a výzkumů, názvy „BUS: Trubka“ a „Spojka busu“ v češtině i angličtině, popisky.
 4. BUS trubka se nenapojí na běžnou trubku ani nádrž, na pumpu ano (pumpa i z modů); BUS podzemní se
    nespáruje s běžnou. Spojka: na běžnou trubku se nenapojí, na BUS ano; rotace R; stav v okně
    spojky („Bus: N segmentů, X %“, „Bez proudu“, „Nepřipojeno k BUS trubce“, „Různé kapaliny“).
