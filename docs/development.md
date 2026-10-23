@@ -18,18 +18,18 @@ Data stage:
 - `fluid-bus/prototypes/bus_marking_data.lua` – umístění „B“, **generované** z `blender/marking.toml`.
 - `fluid-bus/prototypes/research.lua` – výzkumy s dopočítanými prerekvizitami.
 - `fluid-bus/prototypes/coupler.lua` – spojka (assembling-machine 1×1 bez receptu, 2 fluidboxy s kategoriemi busu,
-  `drain`), virtuální signál `fb-balance-interval`, skrytý kombinátor signálu (jeden na spojku, zelený drát).
+  `drain`), virtuální signál `fb-balance-interval`. Do obvodové sítě nic neposílá (od 0.3.0).
 
 Runtime (`control.lua` jen napojuje události):
-- `scripts/registry.lua` – evidence spojek ve `storage`, skrytý kombinátor (drát s původem `script`).
-  `revalidate` převede starší formáty (dva kombinátory) a smaže šipky z vývojové verze.
+- `scripts/registry.lua` – evidence spojek ve `storage`. `revalidate` uklidí pozůstatky starších verzí
+  (odkazy na skryté kombinátory do 0.2.0 – prototyp zrušen, hra je při načtení smaže; šipky z vývojové verze).
 - `scripts/topology.lua` – segmenty na stranách spojek, zástupné BUS trubky, přestavba sítí (bez čtení hry).
 - `scripts/network.lua` – čistá logika: segmenty + aktivní spojky → sítě (union-find).
 - `scripts/balance_math.lua` – čistá logika: plán vyrovnání celé sítě (společné naplnění, přelití, konflikt).
 - `scripts/balancer.lua` – každou síť jednou za `fb-balance-interval` ticků srovná celou v jednom ticku.
-- `scripts/signals.lua` – jediný signál (zelený drát: [kapalina] = naplnění sítě v %; spojka mimo síť posílá
-  plnější stranu – `topology.side_fill` přes `storage.segment_net`, jinak přímé čtení segmentu),
-  `custom_status` a `coupler.state` spojky.
+- `scripts/status.lua` – `custom_status` a `coupler.state` spojky (rozloženě, zápis jen při změně).
+- Obsah busu do obvodové sítě: BUS trubky dědí z vanilla trubek obvodový konektor a čtení „Číst obsah
+  potrubí“ (2.1) – mod pro to nemá žádný kód.
 - `scripts/gui.lua` + `scripts/gui/overview.lua`, `scripts/gui/circuit.lua` – vlastní okno spojky místo
   nativního (to ukazuje recept a čtení obsahu, které skrýt nejde): přehled vlevo, „Připojení obvodu“
   vpravo (přepínač v titulku). Podmínka zůstává v control behavior (blueprint, kopírování zdarma).
@@ -60,7 +60,7 @@ Grafika:
 | Odběr spojky (kW) | startup nastavení `fb-coupler-power` (výchozí 50) |
 | Jak často se vyrovná celá síť (ticky) | nastavení **mapy** `fb-balance-interval` (výchozí 5, mění se za běhu) |
 | Nejvýš segmentů vyrovnaných v jednom ticku (více sítí) | `fluid-bus/scripts/balancer.lua` – `SEGMENT_BUDGET` |
-| Jak často se kontroluje napojení, proud a signály spojek | `fluid-bus/control.lua` – `CHECK_INTERVAL` |
+| Jak často se kontroluje napojení, proud, signál intervalu a stav spojek | `fluid-bus/control.lua` – `CHECK_INTERVAL` |
 | Odchylka, pod kterou se síť nepřelévá (posuzuje se za celou síť) | `fluid-bus/scripts/balance_math.lua` – `TOLERANCE` |
 | Nejmenší přelití (litry) | `fluid-bus/scripts/balance_math.lua` – `MIN_DELTA` |
 | Zpoždění přestavby sítí po změně (slučování změn) | `fluid-bus/control.lua` – `REBUILD_DELAY` |
@@ -129,7 +129,7 @@ zapisovala jen málo segmentů, síť ale zároveň uvízla pod plným. Teď se 
   Příklad: 12 000/s, K = 5, segment 100 trubek (10 000 l) → ±10 %; segment 300 trubek → ±3 %.
   Test „průtok 12 000/s přes spojku“ to hlídá (odběr nestrádá ani o litr).
 - Přestavby sítě (změna topologie) nečtou hru, změny v okně 10 ticků se slučují (`REBUILD_DELAY`).
-- Signály a stav spojek se zapisují rozloženě (`CHECK_INTERVAL`) a jen při změně.
+- Stav spojek se zapisuje rozloženě (`CHECK_INTERVAL`) a jen při změně.
 - Scénář během běhu vypisuje stav sítě a počet přestaveb (`FB-PERF network … segments, fill …, rebuilds N`)
   – bez toho by šlo měřit nečinný bus (stalo se při prvním měření: zdroj energie mimo dosah sloupu).
 - Rozbor po ticích: `.test-run/perf-couplers/bench.log` (CSV v ns, sloupec `scriptUpdate`).
@@ -153,16 +153,17 @@ Spustit `bash tools/link-mod.sh` a hru s modem, v editoru mapy (`/editor`) nebo 
 4. BUS trubka se nenapojí na běžnou trubku ani nádrž, na pumpu ano (pumpa i z modů); BUS podzemní se
    nespáruje s běžnou. Spojka: na běžnou trubku se nenapojí, na BUS ano; rotace R; stav v okně
    spojky („Bus: N segmentů, X %“, „Bez proudu“, „Nepřipojeno k BUS trubce“, „Různé kapaliny“).
-5. Obvodová síť: zelený drát ze spojky do lampy/kombinátoru ukáže [kapalina] = naplnění v %, červený nic.
-   Podmínka zapnutí v okně spojky ji vypne (stav „Vypnuto obvodovou sítí“, žlutá kontrolka); signál
-   „Interval vyrovnávání busu“ jde vybrat a poslat konstantním kombinátorem. Podmínka „[voda] > 50“ bez
-   drátů – spojka pouští dál až nad 50 % (pulzuje).
+5. Obvodová síť: drát ze spojky nenese žádný signál kapaliny. BUS trubka (i podzemní) má obvodový konektor,
+   vzhled konektoru s nastříkaným „B“, „Číst obsah potrubí“ pošle množství v segmentu. Podmínka zapnutí
+   v okně spojky s drátem z BUS trubky ji vypne (stav „Vypnuto obvodovou sítí“, žlutá kontrolka) a nad
+   prahem zapne (pulzuje); signál „Interval vyrovnávání busu“ jde poslat konstantním kombinátorem.
+   Tip pod podmínkou v okně spojky se zalomí a nepřetéká.
 6. Okno spojky: místo nativního okna se otevře vlastní (přehled vlevo, „Připojení obvodu“ vpravo);
    náhled, stav, síť/naplnění/množství, u vypnuté spojky naplnění stran, pruh elektřiny; tlačítko
    v titulku skryje/zobrazí panel obvodu (pamatuje si to); „Připojeno k“ ukazuje jen dráty hráče;
    změna podmínky se projeví; E/Esc a křížek okno zavřou; přetažení okna, poloha se pamatuje; okno se
    zavře při odchodu z dosahu a při zbourání spojky.
-7. Blueprint a kopírování spojky (i podmínky) (skrytý kombinátor se nesmí objevit v blueprintu), zbourání spojky
+7. Blueprint a kopírování spojky (i podmínky), BUS trubky s nastaveným čtením obsahu, zbourání spojky
    (kapalina zůstane v trubkách).
 8. Vzhled spojky: sedí v řadě trubek (vodorovně i svisle), stín, kontrolka zelená s proudem, červená bez
    proudu, žlutá při nedostatku; v noci svítí.

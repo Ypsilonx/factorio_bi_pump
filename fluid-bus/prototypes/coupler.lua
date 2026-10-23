@@ -1,10 +1,9 @@
 --- Spojka busu: assembling-machine 1×1 bez receptu se dvěma oddělenými fluidboxy (kategorie fb-bus),
---- napájená elektřinou (drain), a skrytý konstantní kombinátor (dva na spojku – červený a zelený drát).
+--- napájená elektřinou (drain). Do obvodové sítě nic neposílá – obsah busu čte drátem BUS trubka (2.1).
 --- Typ zvolen podle spiku (spec 8.1): dva segmenty, napájení, dráty, rotace. Kapalinu přelévá skript.
 local M = {}
 
 M.NAME = "fb-bus-coupler"
-M.SIGNALS = "fb-bus-coupler-signals"
 M.CATEGORY = "fb-coupler"
 M.INTERVAL_SIGNAL = "fb-balance-interval"
 --- Objem fluidboxu spojky – započítá se do kapacity segmentu, proto malý. Laditelné.
@@ -129,19 +128,6 @@ function M.prototypes(power_kw)
     },
     localised_description = { "entity-description.fb-bus-coupler" },
   }
-  local signals = table.deepcopy(data.raw["constant-combinator"]["constant-combinator"])
-  signals.name = M.SIGNALS
-  signals.hidden = true
-  signals.flags = { "not-on-map", "not-blueprintable", "not-deconstructable", "placeable-off-grid",
-    "not-selectable-in-game", "hide-alt-info", "not-upgradable", "no-copy-paste" }
-  signals.minable = nil
-  signals.collision_mask = { layers = {} }
-  signals.collision_box = nil
-  signals.selection_box = nil
-  signals.sprites = { filename = "__core__/graphics/empty.png", size = 1 }
-  signals.activity_led_sprites = nil
-  signals.draw_circuit_wires = false
-  signals.circuit_wire_max_distance = 1
   --- Vstupní signál: hodnota N > 0 na kterékoli spojce sítě = interval vyrovnávání té sítě (ticky).
   local interval = { type = "virtual-signal", name = M.INTERVAL_SIGNAL, subgroup = "virtual-signal",
     order = "z[fluid-bus]-a[interval]", icons = {
@@ -151,7 +137,6 @@ function M.prototypes(power_kw)
   return {
     { type = "recipe-category", name = M.CATEGORY },
     entity,
-    signals,
     interval,
     { type = "item", name = M.NAME, icons = icons, subgroup = "energy-pipe-distribution",
       order = "c[pump]-b[fb-bus-coupler]", place_result = M.NAME, stack_size = 50 },

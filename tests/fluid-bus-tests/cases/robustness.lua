@@ -1,5 +1,5 @@
 --- Integrační testy odolnosti (nálezy z review): konflikt kapalin, změna kapaliny, výpadek proudu,
---- skrytý kombinátor, klonování, dvojí registrace, spojky vedle sebe.
+--- klonování, spojky vedle sebe.
 local H = require("helpers")
 
 --- Svislá řada BUS trubek ve sloupci x pro řádky y1..y2.
@@ -21,11 +21,6 @@ local function two_segments(ctx)
   ctx.c = H.place(ctx, "fb-bus-coupler", 0, 0)
   ctx.b = column(ctx, 0, 1, 6)[1]
   ctx.eei = H.power(ctx, 0, 0)
-end
-
---- Počet skrytých kombinátorů na pozici spojky.
-local function hidden_count(ctx, coupler)
-  return #ctx.surface.find_entities_filtered({ name = "fb-bus-coupler-signals", position = coupler.position })
 end
 
 return {
@@ -87,32 +82,19 @@ return {
     },
   },
   {
-    name = "skrytý kombinátor je nezničitelný",
+    name = "klon spojky se zaeviduje (dostane stav)",
     setup = function(ctx) ctx.c = H.place(ctx, "fb-bus-coupler", 0, 0) end,
-    steps = { { ticks = 2, run = function(ctx)
-      local hidden = ctx.surface.find_entities_filtered({ name = "fb-bus-coupler-signals", position = ctx.c.position })[1]
-      H.eq(hidden.destructible, false, "nezničitelný")
-    end } },
-  },
-  {
-    name = "klonování spojky nevyrobí druhý kombinátor",
-    setup = function(ctx) ctx.c = H.place(ctx, "fb-bus-coupler", 0, 0) end,
-    steps = { { ticks = 2, run = function(ctx)
-      local hidden = ctx.surface.find_entities_filtered({ name = "fb-bus-coupler-signals", position = ctx.c.position })
-      ctx.surface.clone_entities({ entities = { ctx.c, hidden[1] }, destination_offset = { 4, 0 } })
-      local clone = ctx.surface.find_entities_filtered({ name = "fb-bus-coupler",
-        position = { ctx.c.position.x + 4, ctx.c.position.y } })[1]
-      H.truthy(clone, "klon spojky")
-      H.eq(hidden_count(ctx, clone), 1, "jeden kombinátor u klonu")
-    end } },
-  },
-  {
-    name = "dvojí ohlášení stavby nevyrobí druhý kombinátor",
-    setup = function(ctx) ctx.c = H.place(ctx, "fb-bus-coupler", 0, 0) end,
-    steps = { { ticks = 2, run = function(ctx)
-      script.raise_script_built({ entity = ctx.c })
-      H.eq(hidden_count(ctx, ctx.c), 1, "jeden kombinátor")
-    end } },
+    steps = {
+      { ticks = 2, run = function(ctx)
+        ctx.surface.clone_entities({ entities = { ctx.c }, destination_offset = { 4, 0 } })
+        ctx.clone = ctx.surface.find_entities_filtered({ name = "fb-bus-coupler",
+          position = { ctx.c.position.x + 4, ctx.c.position.y } })[1]
+        H.truthy(ctx.clone, "klon spojky")
+      end },
+      { ticks = 200, run = function(ctx)
+        H.eq(ctx.clone.custom_status and ctx.clone.custom_status.label[1], "fb-status.no-power", "stav klonu")
+      end },
+    },
   },
   {
     name = "dvě spojky těsně vedle sebe netvoří síť (zástupce nesmí být spojka)",

@@ -19,6 +19,10 @@ Pumpa je jediný přechod mezi busem a běžným potrubím. **Spojka busu se nap
 > **Přechod z verze 0.1:** od 0.2.0 se BUS trubka nenapojí na běžnou trubku, nádrž ani stroj. Ve
 > stávajícím savu se taková napojení po aktualizaci rozpojí – mezi bus a běžné potrubí dej pumpu.
 
+> **Přechod z verze 0.2:** od 0.3.0 spojka nevysílá signál naplnění v %. Drát, který vedl ze spojky,
+> přepoj na BUS trubku („Číst obsah potrubí“) a podmínky přepočti z procent na množství (viz Obvodová
+> síť). Podmínka spojky „[kapalina] > 50“ bez drátu přestane fungovat – přiveď drát z BUS trubky.
+
 ## Postup krok za krokem
 1. Vyzkoumej **Kapalinový bus** (ve vanille po pokročilých obvodech, v modech po výzkumech surovin
    spojky). Trubky z modů za pozdějším výzkumem mají vlastní
@@ -47,7 +51,7 @@ Kliknutím na spojku se otevře její okno (rozvržení jako u inserteru):
 - **vlevo** stav s barevnou tečkou, náhled spojky, **Síť: N segmentů**, **Naplnění** a **Množství**
   (u spojky mimo síť naplnění obou stran) a elektřina,
 - **vpravo** panel **Připojení obvodu** (přepíná se tlačítkem v titulku): čísla sítí připojených drátem,
-  **Povolit/Zakázat** s podmínkou a co spojka vysílá.
+  **Povolit/Zakázat** s podmínkou a tip, odkud vzít signál.
 
 Stavy spojky:
 - **Bus: N segmentů, X %** – vše v pořádku, síť má N segmentů naplněných na X %.
@@ -59,28 +63,32 @@ Stavy spojky:
   dokud jednu z nich neodstraníš.
 
 ## Obvodová síť
-Spojka vysílá jediný signál na **zeleném drátu**: **[kapalina] = naplnění v %** (0–100), pod ikonou
-kapaliny, která busem teče (voda, ropa, pára…).
-- Zapnutá spojka posílá naplnění celé sítě.
-- Vypnutá (nebo nenapájená) spojka posílá naplnění **plnější ze svých dvou stran** – díky tomu ji
-  podmínka „[voda] > 50“ umí zase zapnout.
+Spojka **nic nevysílá**. Obsah busu čte drátem **BUS trubka** stejně jako běžná trubka ve Factoriu 2.1:
+v okně trubky zapni **„Číst obsah potrubí“** a trubka pošle **množství kapaliny v celém svém segmentu**
+(volitelně i teplotu). Protože spojky drží všechny segmenty sítě na stejném naplnění, stačí číst
+jednu trubku kdekoli v síti.
 
-Signály stejné barvy se ve Factoriu sčítají – zelený drát od spojky proto nevěď do sítě, kde už je
-stejná kapalina z jiného zdroje (např. z nádrže), jinak se procenta sečtou.
+**Přepočet na procenta:** každá BUS trubka i podzemní trubka pojme 100 jednotek (vanilla; trubky z modů
+mohou mít jiný objem), segment z 50 trubek tedy 5 000. Naplnění v % = množství / kapacita segmentu × 100 – 50 % u segmentu
+z 50 trubek je „[voda] > 2500“.
 
-Příklady (zelený drát ze spojky):
-- **Spal / vylij přebytek jen nad 90 %**: zelený drát do pumpy u spalovny, podmínka „[voda] > 90“.
-- **Zapni záložní zdroj pod 30 %**: zelený drát do pumpy záložního zdroje, podmínka „[voda] < 30“.
+Signály stejné barvy se ve Factoriu sčítají: dvě čtecí trubky na jednom drátu dají dvojnásobek. Na jednu
+obvodovou síť proto stačí **jedna** čtecí trubka.
+
+Příklady (drát z BUS trubky, segment z 50 trubek):
+- **Spal / vylij přebytek jen nad 90 %**: drát do pumpy u spalovny, podmínka „[voda] > 4500“.
+- **Zapni záložní zdroj pod 30 %**: drát do pumpy záložního zdroje, podmínka „[voda] < 1500“.
 
 ### Řízení spojky
 Bez podmínky spojka pracuje pořád (stačí proud a BUS trubky na obou stranách).
 - **Povolit/Zakázat** – v okně spojky zaškrtni „Povolit/Zakázat“ a nastav podmínku (jako u pumpy).
   Vypnutá spojka nepřelévá, segmenty na jejích stranách se oddělí a stav ukáže **Vypnuto obvodovou
   sítí** (žlutá kontrolka). Hodí se např. k odstavení části busu při údržbě.
-- **Přednostní plnění (přepad)** – podmínka **„[voda] > 50“**: dokud není bus aspoň na jedné straně
-  spojky z poloviny plný, strany zůstanou oddělené; nad 50 % se spojí a srovnají (klesne-li pak
-  naplnění pod 50 %, spojka se zase vypne – pulzuje, to je v pořádku). Funguje **i bez drátů** –
-  spojka vidí svůj vlastní signál. Hodí se, když má mít část busu (např. elektrárna) přednost.
+- **Přednostní plnění (přepad)** – drát z BUS trubky v segmentu **před** spojkou (na straně zdroje)
+  do spojky, podmínka na polovinu kapacity toho segmentu (u 50 trubek **„[voda] > 2500“**): dokud není
+  segment z poloviny plný, strany zůstanou oddělené; nad 50 % se spojí a srovnají (klesne-li pak
+  naplnění pod práh, spojka se zase vypne – pulzuje, to je v pořádku). Hodí se, když má mít část busu
+  (např. elektrárna) přednost.
 - **Interval vyrovnávání** – pošli do spojky signál **Interval vyrovnávání busu** (ikona hodin)
   s hodnotou N (1–600): celá její síť se pak vyrovnává každých N ticků místo nastavení mapy.
   Pošle-li se do jedné sítě víc hodnot, platí nejmenší. Bez signálu (nebo 0) platí nastavení mapy.

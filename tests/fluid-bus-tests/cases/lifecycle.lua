@@ -1,4 +1,4 @@
---- Integrační testy životního cyklu spojky: rotace, ztráta kombinátoru, revalidace.
+--- Integrační testy životního cyklu spojky: rotace.
 local H = require("helpers")
 
 return {
@@ -20,19 +20,5 @@ return {
         H.eq(remote.call("fb", "network_of", ctx.c.unit_number), nil, "po rotaci bez sítě")
       end },
     },
-  },
-  {
-    name = "revalidace po ztrátě kombinátoru vytvoří nový",
-    setup = function(ctx)
-      ctx.c = H.place(ctx, "fb-bus-coupler", 0, 0)
-    end,
-    steps = { { ticks = 5, run = function(ctx)
-      local hidden = ctx.surface.find_entities_filtered({ name = "fb-bus-coupler-signals", position = ctx.c.position })
-      H.eq(#hidden, 1, "jeden kombinátor")
-      hidden[1].destroy()
-      remote.call("fb", "revalidate")
-      H.eq(#ctx.surface.find_entities_filtered({ name = "fb-bus-coupler-signals", position = ctx.c.position }), 1,
-        "obnoven")
-    end } },
   },
 }

@@ -27,8 +27,8 @@ procento naplnění, bez ohledu na délku a polohu vstupů a výstupů.
   pumpa je brána mezi busem a běžným potrubím.
 - **Spojka busu** 1×1 na elektřinu ve linii BUS trubek. Segmenty propojené spojkami tvoří **síť**,
   kterou skript drží na stejném naplnění. Bez proudu nebo vypnutá obvodem = segmenty oddělené.
-- **Obvodová síť:** zelený drát `[kapalina]` = naplnění sítě v %; spojka mimo síť posílá plnější
-  stranu. Podmínka zapnutí/vypnutí a signál `fb-balance-interval` (interval vyrovnávání sítě).
+- **Obvodová síť:** spojka nic neposílá; obsah busu čte drátem BUS trubka (vanilla „Číst obsah potrubí“,
+  2.1 – zděděno z trubky). Spojka má podmínku zapnutí/vypnutí a signál `fb-balance-interval`.
 - **Vlastní okno spojky** místo nativního okna stroje (stav, síť, naplnění, elektřina, připojení obvodu).
 
 ### Typické zapojení
@@ -54,7 +54,7 @@ procento naplnění, bez ohledu na délku a polohu vstupů a výstupů.
 | Tolerance | posuzuje se za **celou síť** (nikdo neodchyluje víc než `TOLERANCE` → nepřelévat) | tolerance po segmentech nechala síť uvíznout pod plným (bug 0.1.0) |
 | Teplota | doplňuje se s teplotou odebrané kapaliny, míchání dělá engine | vážený průměr zdarma |
 | Topologie | čistá logika (`network.lua`, union-find) nad segmenty z rozložené kontroly; změny se slučují (`REBUILD_DELAY`) | přestavba nečte hru, žádné špičky |
-| Signál | jeden: zelený `[kapalina]` = %; skrytý kombinátor drátem s původem `script` | jednodušší pro hráče než % + množství (v0.1); podmínka „[voda] > 50“ jde použít i bez drátů |
+| Signál | spojka žádný (od 0.3.0); čte BUS trubka – vanilla čtení obsahu segmentu (množství) | vlastní % signál ze spojky se na jednom drátu sčítal (dvě spojky = 120 %) a od 2.1 duplikoval vanilla čtení trubek; množství jde přepočítat na % |
 | Řízení | podmínka v control behavior stroje (blueprint, kopírování zdarma); signál intervalu – síť bere nejmenší | nic vlastního k přenosu nastavení |
 | GUI | vlastní okno (`player.opened = frame`) | nativní okno stroje ukazuje recept a volby, které spojka ignoruje |
 | Grafika | „B“ nastříkané sprejem z Blenderu jako vrstva přes původní sprite; spojka = manometrová armatura (Blender) | jedna sada overlayů pro libovolnou trubku; cizí sprity nejde upravit |

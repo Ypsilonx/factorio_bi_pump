@@ -5,6 +5,15 @@ Date: 2026-10-23
     - Updated for Factorio 2.1 (requires 2.1; Factorio 2.0 stays on 0.2.0).
     - Fluid access migrated to the 2.1 LuaEntity fluid API (LuaFluidBox was removed).
     - Recycling recipes for BUS pipes and the coupler now come from the recycler mod.
+    - The coupler no longer sends a circuit signal. In Factorio 2.1 every pipe can read the pipeline
+      contents, and BUS pipes can too: set a BUS pipe to "Read pipeline contents" to get the amount
+      of fluid in its segment. The couplers keep all segments at the same fill, so one reading pipe
+      shows the state of the whole bus. Summing of percentages from several couplers on one wire is gone.
+    - Existing saves: wires from a coupler no longer carry the fill % – move them to a BUS pipe and
+      convert conditions from % to amounts (each pipe holds 100, e.g. 50 % of a 50-pipe segment is
+      "[fluid] > 2500"). A coupler condition such as "[fluid] > 50" without a wire stops working –
+      wire a BUS pipe in front of the coupler to it.
+    - The coupler's Enable/Disable condition and the "Bus balancing interval" signal work as before.
   Compatibility:
     - Tested on Factorio 2.1 with Space Age, Pyanodon's modpack 3.1 and Bob's Logistics 3.0.
     - Pipe Tiers has no Factorio 2.1 release yet; support stays in place for when it is updated.

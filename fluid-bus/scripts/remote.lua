@@ -21,7 +21,7 @@ function M.register()
     set_interval = function(ticks) settings.global["fb-balance-interval"] = { value = ticks } end,
     --- Vynutí přestavbu sítí v příštím ticku.
     rebuild = function() storage.dirty = true end,
-    --- Úklid evidence a obnova skrytých kombinátorů (jako po změně modů).
+    --- Úklid evidence (jako po změně modů).
     revalidate = function() registry.revalidate() end,
   })
 end

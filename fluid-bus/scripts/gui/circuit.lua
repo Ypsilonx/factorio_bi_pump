@@ -1,5 +1,5 @@
 --- Pravá část okna spojky „Připojení obvodu“ (jako u inserteru): čísla sítí připojených drátem hráče,
---- Povolit/Zakázat s podmínkou [signál] [porovnání] [číslo] a popis vysílaného signálu.
+--- Povolit/Zakázat s podmínkou [signál] [porovnání] [číslo] a tip, odkud vzít signál (BUS trubka).
 --- Podmínku drží engine v control behavior spojky (přenáší ji v blueprintech, kopírování a sám ji
 --- vyhodnocuje – topology.refresh čte `disabled`), okno ji jen čte a zapisuje.
 local M = {}
@@ -35,7 +35,9 @@ function M.build(parent)
   constant.style.width = 60
   constant.style.horizontal_align = "center"
   frame.add({ type = "line", direction = "horizontal" })
-  frame.add({ type = "label", caption = { "fb-gui.output" } })
+  local hint = frame.add({ type = "label", caption = { "fb-gui.read-hint" } })
+  hint.style.single_line = false
+  hint.style.maximal_width = 280
   return frame
 end
 

@@ -39,7 +39,7 @@ local function element(spec, parent)
 end
 
 prototypes = { mod_data = { ["fb-data"] = { data = {
-  coupler = "fb-bus-coupler", coupler_signals = "fb-bus-coupler-signals", interval_signal = "fb-balance-interval",
+  coupler = "fb-bus-coupler", interval_signal = "fb-balance-interval",
 } } } }
 defines = {
   wire_connector_id = { circuit_red = 1, circuit_green = 2 },

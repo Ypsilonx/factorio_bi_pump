@@ -2,23 +2,16 @@
 local registry = require("scripts.registry")
 local topology = require("scripts.topology")
 local balancer = require("scripts.balancer")
-local signals = require("scripts.signals")
+local status = require("scripts.status")
 local remote_api = require("scripts.remote")
 local gui = require("scripts.gui")
 
 local FILTER = { { filter = "name", name = registry.COUPLER } }
---- Klonování: i skrytý kombinátor (klon spojky dostane vlastní, naklonovaný se zahodí).
-local CLONE_FILTER = { { filter = "name", name = registry.COUPLER }, { filter = "name", name = registry.SIGNALS } }
 
 --- Postavení spojky libovolnou cestou (hráč, robot, platforma, skript, klonování).
 local function on_built(event)
   local entity = event.entity or event.destination
-  if not (entity and entity.valid) then return end
-  if entity.name == registry.SIGNALS then
-    entity.destroy()
-  elseif entity.name == registry.COUPLER then
-    registry.add(entity)
-  end
+  if entity and entity.valid then registry.add(entity) end
 end
 
 --- Odstranění spojky libovolnou cestou.
@@ -27,11 +20,11 @@ local function on_removed(event)
   if entity and entity.valid and entity.name == registry.COUPLER then registry.remove(entity.unit_number) end
 end
 
---- Za kolik ticků projde rozložená kontrola všechny spojky (napojení, proud, signály, stav). Laditelné.
+--- Za kolik ticků projde rozložená kontrola všechny spojky (napojení, proud, signál intervalu, stav). Laditelné.
 local CHECK_INTERVAL = 60
 
 --- Rozložená kontrola: za CHECK_INTERVAL projde všechny spojky – topologie, proud a zapnutí obvodem
---- (změna → přestavba sítí), signál intervalu, výstupní signály a stav. Rozložení zabrání špičkám
+--- (změna → přestavba sítí), signál intervalu a stav. Rozložení zabrání špičkám
 --- ticku u velkých busů; řízení obvodem se proto projeví se zpožděním nejvýš CHECK_INTERVAL.
 local function check_couplers()
   local list = storage.check_list
@@ -43,7 +36,7 @@ local function check_couplers()
       storage.dirty = true
     else
       topology.read_interval(unit, coupler)
-      signals.update_coupler(unit, coupler)
+      status.update_coupler(unit, coupler)
     end
     storage.check_cursor = storage.check_cursor % #list + 1
   end
@@ -79,7 +72,7 @@ for _, name in ipairs({ "on_built_entity", "on_robot_built_entity", "on_space_pl
   "script_raised_built", "script_raised_revive" }) do
   script.on_event(defines.events[name], on_built, FILTER)
 end
-script.on_event(defines.events.on_entity_cloned, on_built, CLONE_FILTER)
+script.on_event(defines.events.on_entity_cloned, on_built, FILTER)
 for _, name in ipairs({ "on_player_mined_entity", "on_robot_mined_entity", "on_space_platform_mined_entity",
   "on_entity_died", "script_raised_destroy" }) do
   script.on_event(defines.events[name], on_removed, FILTER)
