@@ -13,3 +13,6 @@ __pycache__/
 # Zahazovací spike a pracovní prostor plánů (superpowers)
 spike/
 .superpowers/
+
+# Strojové cesty z FMTK (mění se s ID pracovního prostoru VSCode)
+.vscode/settings.json
